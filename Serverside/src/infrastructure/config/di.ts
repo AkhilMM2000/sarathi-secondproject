@@ -3,6 +3,7 @@ import { IUserRepository } from "../../domain/repositories/IUserepository";
 import { MongoUserRepository } from "../database/MongoUserRepository";
 import { HashService} from "../../application/services/HashService";
 import { EmailService } from "../../application/services/Emailservice"; 
+
 // Register repositories
 container.register<IUserRepository>("IUserRepository", { useClass: MongoUserRepository });
 

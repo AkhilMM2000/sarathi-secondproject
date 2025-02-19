@@ -3,11 +3,13 @@ import "./infrastructure/config/di"; // Dependency Injection Setup
 import express from "express";
 import { connectDB } from "./config/database";
 import userRoutes from "./presentation/routes/userRoutes";
+import cookieParser from "cookie-parser";
 import cors from 'cors'
 import dotenv from "dotenv";
 
 dotenv.config();
 const app = express();
+app.use(cookieParser());
 app.use(express.json());
 app.use(cors({
   origin: 'http://localhost:5173', 

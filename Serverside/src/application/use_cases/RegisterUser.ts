@@ -8,8 +8,9 @@ export class RegisterUser {
 
   async execute(userData: User) {
     const { name, email, mobile, password, referralCode } = userData;
+   
     const store = UserRegistrationStore.getInstance();
-console.log(userData);
+   
 
 
     // Check if user already exists in memory (to prevent resending OTP)
@@ -24,7 +25,7 @@ console.log(userData);
 
     // Send OTP to email
     await this.emailService.sendOTP(email, otp);
-console.log(`created ot is ${otp}` );
+      console.log(`created ot is ${otp}` );
 
     return { message: "OTP sent to email" };
   }

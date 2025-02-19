@@ -2,18 +2,29 @@ import { useState, useEffect } from "react";
 import { TextField, Button, Typography, Card } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-
+import ApiService from '../services/Api'
+import { toast, ToastContainer } from "react-toastify";
 const OTPVerification = () => {
   const navigate = useNavigate();
   const params = new URLSearchParams(location.search);
   const role = params.get("role");
 
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
-  const [timer, setTimer] = useState(30); // 30-second countdown
+  const [timer, setTimer] = useState(30); 
   const [showResend, setShowResend] = useState(false);
   const [error, setError] = useState("");
+  const [email, setEmail] = useState("");
+  useEffect(() => {
+    const storedEmail = localStorage.getItem("email");
+    if (storedEmail) {
+      setEmail(storedEmail);
+    } else {
+      toast.error("No email found, please register again.");
+    }
+  }, []);
 
-  // Countdown timer effect
+
+
   useEffect(() => {
     if (timer > 0) {
       const interval = setInterval(() => {
@@ -21,7 +32,7 @@ const OTPVerification = () => {
       }, 1000);
       return () => clearInterval(interval);
     } else {
-      setShowResend(true); // Show resend button when timer hits 0
+      setShowResend(true);
     }
   }, [timer]);
 
@@ -33,7 +44,7 @@ const OTPVerification = () => {
     newOtp[index] = value;
     setOtp(newOtp);
 
-    // Auto-focus to next field
+
     if (value && index < 5) {
       document.getElementById(`otp-${index + 1}`)?.focus();
     }
@@ -42,28 +53,26 @@ const OTPVerification = () => {
   // Handle OTP submission
   const handleSubmit = async () => {
     const otpValue = otp.join("");
-
+  
     try {
-      const response = await axios.post("http://localhost:5000/api/users/verify-otp", {
-        otp: otpValue,
-        role,
-      });
-
-      if (response.data.success) {
-        // Store tokens & navigate to home
+      const response = await ApiService.verifyOtp(otpValue, email);
+  
+      if (response.success) {
         navigate("/");
       } else {
         setError("Invalid OTP. Please try again.");
       }
-    } catch (err) {
-      setError("Something went wrong. Please try again.");
+    } catch (error:any) {
+      toast.error(error, { position: "top-center", autoClose: 2000 });
     }
   };
+  
 
   // Handle Resend OTP
   const handleResend = async () => {
+  
     try {
-      await axios.post("http://localhost:5000/api/auth/resend-otp", { role });
+      await axios.post("http://localhost:5000/api/users/resend-otp", { role:"user" ,email});
 
       // Reset states
       setOtp(["", "", "", "", "", ""]);
@@ -123,6 +132,7 @@ const OTPVerification = () => {
           )}
         </div>
       </Card>
+      <ToastContainer />
     </div>
   );
 };

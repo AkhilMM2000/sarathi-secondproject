@@ -20,7 +20,9 @@ export class UserRegistrationStore {
     getUser(email: string) {
       return this.users.get(email);
     }
-
+  clearUser(){
+    this.users.clear()
+  }
   
     removeUser(email: string) {
       this.users.delete(email);

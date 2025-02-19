@@ -7,6 +7,7 @@ const router = express.Router();
 router.post("/register", UserController.register);
 
 // OTP Verification Route
-router.post("/verify-otp", UserController.verifyOTP);
+router.post("/verify-otp", UserController.verifyOTPUser);
 
+router.post("/resend-otp", UserController.resendOTP);
 export default router;

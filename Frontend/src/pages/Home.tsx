@@ -1,9 +1,14 @@
 import { Button, Card, CardContent, Typography } from "@mui/material";
 import { useNavigate } from "react-router-dom";
-
+import PersonIcon from "@mui/icons-material/Person"; // Icon for User Login
+import DriveEtaIcon from "@mui/icons-material/DriveEta";
+import Navbar from "./Navbar";
 const Home = () => {
   const navigate = useNavigate();
+
+  
   return (
+    
     <div className="flex justify-center items-center min-h-screen bg-gradient-to-r from-blue-500 to-purple-600 relative">
       {/* Background Overlay */}
       <div className="absolute inset-0 bg-black bg-opacity-30 z-0"></div>
@@ -23,6 +28,7 @@ const Home = () => {
               <Button 
               variant="contained" 
               color="primary" 
+              startIcon={<PersonIcon />} 
               onClick={() => navigate("/user")}
             >
               Go to User Registration
@@ -38,6 +44,7 @@ const Home = () => {
             <Button 
               variant="contained" 
               color="secondary" 
+              startIcon={<DriveEtaIcon />}
               onClick={() => navigate("/driver")}
             >
               Go to Driver Registration
