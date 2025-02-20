@@ -3,6 +3,8 @@ import { container } from "tsyringe";
 import { RegisterUser } from "../../application/use_cases/RegisterUser";
 import { VerifyOTP } from "../../application/use_cases/VerifyOTP";
 import { ResendOTP } from "../../application/use_cases/ResendOTP";
+import { Login } from "../../application/use_cases/Login";
+
 export class UserController {
   static async register(req: Request, res: Response) {
     try {
@@ -40,6 +42,23 @@ export class UserController {
         success: false, 
         message: error instanceof Error ? error.message : "Something went wrong" 
       });
+    }
+  }
+
+  static async login(req: Request, res: Response) {
+    try {
+      const login = container.resolve(Login);
+      const { email, password } = req.body;
+      const result = await login.execute(req,res,email, password);
+
+      res.status(200).json({
+        success: true,
+        message: "Login successful",
+        accessToken: result.accessToken,
+        user: result.user,
+      });
+    } catch (error) {
+      res.status(400).json({ success: false, error: error || "Login failed" });
     }
   }
 

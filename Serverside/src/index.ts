@@ -16,10 +16,11 @@ app.use(cors({
   credentials: true,  // Allow cookies (like JWT tokens) to be sent
 }));
 
+
 // Routes
 app.use("/api/users", userRoutes);
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT||3000;
 
 // Start Server
 connectDB().then(() => {
