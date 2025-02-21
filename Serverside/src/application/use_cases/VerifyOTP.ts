@@ -32,13 +32,13 @@ store.clearUser()
 
  
     const accessToken = jwt.sign(
-      { id: user._id, email: user.email, role: user.role },
+      { id: user._id, role: user.role },
       process.env.ACCESS_TOKEN_SECRET as string,
       { expiresIn: "15m" }
     );
 
     const refreshToken = jwt.sign(
-      { id: user._id, email: user.email, role: user.role },
+      { id: user._id, role: user.role },
       process.env.REFRESH_TOKEN_SECRET as string,
       { expiresIn: "7d" }
     );
@@ -55,7 +55,7 @@ store.clearUser()
       accessToken,
       user: {
         id: user._id,
-        email: user.email,
+     
         role: user.role,
       },
     }

@@ -4,6 +4,7 @@ import { RegisterUser } from "../../application/use_cases/RegisterUser";
 import { VerifyOTP } from "../../application/use_cases/VerifyOTP";
 import { ResendOTP } from "../../application/use_cases/ResendOTP";
 import { Login } from "../../application/use_cases/Login";
+import { RefreshToken } from "../../application/use_cases/Refreshtoken";
 
 export class UserController {
   static async register(req: Request, res: Response) {
@@ -59,6 +60,20 @@ export class UserController {
       });
     } catch (error) {
       res.status(400).json({ success: false, error: error || "Login failed" });
+    }
+  }
+  static async refreshToken(req: Request, res: Response) {
+    try {
+      const refreshTokenUseCase = container.resolve(RefreshToken);
+      const result = await refreshTokenUseCase.execute(req.cookies.refreshToken);
+
+      if (!result.success) {
+        return res.status(403).json({ success: false, message: result.message });
+      }
+
+      res.status(200).json({ success: true, accessToken: result.accessToken });
+    } catch (error) {
+      res.status(500).json({ success: false, message: "Server error", error });
     }
   }
 

@@ -9,6 +9,10 @@ import Body from "./Body";
 import UserLogin from "../pages/UserLogin";
 import UserHome from "../pages/UserHome";
 import UserBody from "./UserBody";
+import DriverRegister from "../driver/driverRegister";
+import DriverOTPVerification from "../driver/VerifyOTP";
+import ProfileLocation from "../driver/Location";
+import DocumentsVerify from "../driver/Documents";
 
 
 const AppRoutes = () => {
@@ -34,6 +38,12 @@ const AppRoutes = () => {
         <Route path="/" element={<UserBody/>}>
         <Route path="/home" element={<UserHome/>}/>
         </Route>
+
+        <Route path="/driver" element={<DriverRegister/>}/>
+        <Route path="/driver-location" element={<ProfileLocation/>}/>
+        <Route path="/driver-otpverification" element={<DriverOTPVerification/>}/>
+       
+        <Route path="/docs" element={<DocumentsVerify/>}/>
       </Routes>
     
     </BrowserRouter>
