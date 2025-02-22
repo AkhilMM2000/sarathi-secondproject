@@ -2,13 +2,14 @@ import { useState } from "react";
 import { Button, Typography, Card, Avatar } from "@mui/material";
 import { toast, ToastContainer } from "react-toastify";
 import { useNavigate } from "react-router-dom";
+import Api from "../services/Api";
 
 const ProfileLocation = () => {
   const navigate = useNavigate();
 
   const [profileImage, setProfileImage] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
-  const [location, setLocation] = useState<string | null>(null); 
+  const [location, setLocation] = useState<{ latitude: number; longitude: number } | null>(null);
 
   // Handle profile image upload
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -19,19 +20,38 @@ const ProfileLocation = () => {
     }
   };
 
-  // Dummy function to simulate location selection
-  const handleSelectLocation = () => {
-    setLocation("Selected Location: XYZ, City");
-    toast.success("Location Selected Successfully!");
-  };
-
-  // Handle Next Step
-  const handleNext = () => {
-    if (!profileImage || !location) {
-      toast.error("Please upload a profile image and select a location.");
+  // Handle image upload & location selection
+  const handleSelectLocation = async () => {
+    if (!profileImage) {
+      toast.error("Please select an image before uploading.");
       return;
     }
-    navigate("/next-step");
+
+    try {
+      // Upload Image to Cloudinary
+      const imageUrl = await Api.uploadImage(profileImage);
+      if (!imageUrl) throw new Error("Failed to upload image");
+
+      localStorage.setItem("driverProfileImage", imageUrl);
+      toast.success("Profile image uploaded successfully!");
+
+      // Get browser location and store it
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          const locationData = { latitude, longitude };
+          
+          setLocation(locationData); // Update state
+          localStorage.setItem("driverLocation", JSON.stringify(locationData));
+          
+          toast.success("Location selected successfully!");
+          navigate("/docs"); // Navigate only after setting location
+        },
+        () => toast.error("Failed to get location. Please enable location access.")
+      );
+    } catch (error) {
+      toast.error("Image upload failed. Try again.");
+    }
   };
 
   return (
@@ -58,11 +78,20 @@ const ProfileLocation = () => {
           <Button variant="contained" sx={{ backgroundColor: "#0288d1", color: "white" }} onClick={handleSelectLocation}>
             Select Location
           </Button>
-          {location && <Typography className="text-sm text-green-700 mt-2">{location}</Typography>}
+          {location && (
+            <Typography className="text-sm text-green-700 mt-2">
+              Latitude: {location.latitude}, Longitude: {location.longitude}
+            </Typography>
+          )}
         </div>
 
         {/* Next Button */}
-        <Button variant="contained" sx={{ backgroundColor: "#ff9800", color: "white", marginTop: "20px" }} fullWidth onClick={handleNext}>
+        <Button
+          variant="contained"
+          sx={{ backgroundColor: "#ff9800", color: "white", marginTop: "20px" }}
+          fullWidth
+          onClick={handleSelectLocation}
+        >
           Next
         </Button>
       </Card>

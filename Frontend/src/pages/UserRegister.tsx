@@ -58,8 +58,8 @@ const RegisterUser = () => {
       if (!validateForm()) return;
       setLoading(true);
       try {
-      await ApiService.registerUser(formData);
-      
+     
+      await ApiService.registerUser(formData, "drivers");
         
         localStorage.setItem("email", formData.email);
         navigate("/otp-verification?role=user");
