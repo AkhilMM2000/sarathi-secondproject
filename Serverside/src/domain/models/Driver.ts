@@ -1,5 +1,8 @@
+import { ObjectId } from "mongoose";
+
 export interface Driver {
-    id?: string;
+
+    _id?:ObjectId;
     name: string;
     email: string;
     mobile: string;
@@ -15,6 +18,7 @@ export interface Driver {
     licenseImage: string;
     status: "pending" | "approved" | "rejected";
     isBlock: boolean; 
+    role:"driver",
     createdAt?: Date;
   }
   
