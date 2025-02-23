@@ -1,6 +1,7 @@
 import React, { useState ,ChangeEvent,MouseEvent} from "react";
 import { toast, ToastContainer } from "react-toastify";
 import Api from "../services/Api";
+import { useNavigate } from "react-router-dom";
 
 const DocumentsVerify = () => {
   const [aadhaarFile, setAadhaarFile] = useState<File | null>(null);
@@ -11,7 +12,7 @@ const DocumentsVerify = () => {
 
   const [aadhaarNumber, setAadhaarNumber] = useState<string>("");
 const [licenseNumber, setLicenseNumber] = useState<string>("");
-
+const navigate=useNavigate()
   const handleInputChange = (event: ChangeEvent<HTMLInputElement>, setValue: React.Dispatch<React.SetStateAction<string>>) => {
   setValue(event.target.value);
 };
@@ -62,12 +63,28 @@ const [licenseNumber, setLicenseNumber] = useState<string>("");
           
               console.log("Final Data to Send:", driverData);
 
+              const response = await Api.registerUser(driverData, "drivers");
 
-      } catch (error) {
-        
-      }
-  
-
+              if (response.success) {
+                toast.success("Registration successful! Please wait for admin verification.");
+                
+                // Clear local storage
+                localStorage.removeItem("driverProfileImage");
+                localStorage.removeItem("driverLocation");
+                localStorage.removeItem("driverRegisterData");
+          
+                // Navigate to driver login
+                setTimeout(() => {
+                  navigate("/driverlogin");
+                }, 2000); // Wait for 2 seconds before navigating
+              } else {
+                throw new Error(response.message || "Registration failed");
+              }
+            } catch (error) {
+              const errorMessage =
+    error instanceof Error ? error.message : "An error occurred during registration";
+              toast.error(errorMessage);
+            }
   }
  
   return (

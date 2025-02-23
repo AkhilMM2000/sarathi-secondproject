@@ -9,7 +9,7 @@ class ApiService {
 
   async registerUser(formData: Record<string, any>, type: "users" | "drivers") {
     try {
-      const response = await axios.post(`${this.baseUrl}/${type}`, formData);
+      const response = await axios.post(`${this.baseUrl}/${type}/register`, formData);
       return response.data;
     } catch (error: any) {
       throw error.response?.data?.message || "Registration failed";

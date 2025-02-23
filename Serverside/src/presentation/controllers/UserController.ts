@@ -5,6 +5,7 @@ import { VerifyOTP } from "../../application/use_cases/VerifyOTP";
 import { ResendOTP } from "../../application/use_cases/ResendOTP";
 import { Login } from "../../application/use_cases/Login";
 import { RefreshToken } from "../../application/use_cases/Refreshtoken";
+import { RegisterDriver } from "../../application/use_cases/RegisterDriver";
 
 export class UserController {
   static async register(req: Request, res: Response) {
@@ -76,5 +77,8 @@ export class UserController {
       res.status(500).json({ success: false, message: "Server error", error });
     }
   }
+
+  
+
 
 }

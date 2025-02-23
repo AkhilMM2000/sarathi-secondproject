@@ -4,6 +4,7 @@ import express from "express";
 import { connectDB } from "./config/database";
 import userRoutes from "./presentation/routes/userRoutes";
 import cookieParser from "cookie-parser";
+import driverRoute from './presentation/routes/driverRoutes'
 import cors from 'cors'
 import dotenv from "dotenv";
 
@@ -19,7 +20,7 @@ app.use(cors({
 
 // Routes
 app.use("/api/users", userRoutes);
-
+app.use('/api/drivers',driverRoute)
 const PORT = process.env.PORT||3000;
 
 // Start Server

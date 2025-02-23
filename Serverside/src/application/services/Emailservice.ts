@@ -17,7 +17,6 @@ export class EmailService {
 
   async sendOTP(email: string, otp: string): Promise<void> {
     
-    
     const mailOptions = {
       from: process.env.EMAIL_USER,
       to: email,
