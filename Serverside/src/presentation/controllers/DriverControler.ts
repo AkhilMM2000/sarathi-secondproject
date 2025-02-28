@@ -12,7 +12,8 @@ export class DriverController {
 
     static async registerDriver(req: Request, res: Response) {
         try {
-            console.log(req.body);
+         
+           
             
           const DriverRegister= container.resolve(RegisterDriver);
           const response = await DriverRegister.execute(req.body);
@@ -33,7 +34,7 @@ export class DriverController {
           const result = await verifyOTP.execute(req,res,email, otp,'driver');
           res.status(200).json({ success: true, ...result });
         } catch (error) {
-          res.status(400).json({ success: false, error: error|| "OTP verification failed" });
+          res.status(400).json({ success: false, error: "p" });
         }
       }
 

@@ -2,6 +2,8 @@ import jwt from "jsonwebtoken";
 import { inject, injectable } from "tsyringe";
 import { IUserRepository } from "../../domain/repositories/IUserepository"; 
 @injectable()
+
+
 export class RefreshToken {
   constructor(@inject("IUserRepository") private userRepository: IUserRepository) {}
 

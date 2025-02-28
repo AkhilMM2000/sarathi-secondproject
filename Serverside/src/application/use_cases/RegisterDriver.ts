@@ -20,9 +20,12 @@ export class RegisterDriver {
     const otpExpires = new Date(Date.now() + 10 * 60 * 1000); 
     //store the data in the js map
     store.addUser(email,{...driverData,otp,otpExpires})
+    
+    
     // Send OTP to driver's email
     await this.emailService.sendOTP(email, otp);
-
+  console.log(`${otp} for driver`);
+  
     return { message: "OTP sent successfully. Please verify your email." };
   }
 

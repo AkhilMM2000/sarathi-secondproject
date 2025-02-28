@@ -7,7 +7,8 @@ import { toast, ToastContainer } from "react-toastify";
 const OTPVerification = () => {
   const navigate = useNavigate();
   const params = new URLSearchParams(location.search);
-  const role = params.get("role");
+  const role = (params.get("role") as "users" | "drivers") || "users"; // Default to "users"
+
 
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
   const [timer, setTimer] = useState(30); 
@@ -15,13 +16,20 @@ const OTPVerification = () => {
   const [error, setError] = useState("");
   const [email, setEmail] = useState("");
   useEffect(() => {
-    const storedEmail = localStorage.getItem("email");
+    let storedEmail = localStorage.getItem("Driveremail");
+
+    // If 'Driveremail' doesn't exist, check for 'email' (normal user case)
+    if (!storedEmail) {
+      storedEmail = localStorage.getItem("email");
+    }
+  
     if (storedEmail) {
       setEmail(storedEmail);
     } else {
       toast.error("No email found, please register again.");
     }
   }, []);
+
 
 
 
@@ -55,15 +63,33 @@ const OTPVerification = () => {
     const otpValue = otp.join("");
   
     try {
-      const response = await ApiService.verifyOtp(otpValue, email);
+      const response = await ApiService.verifyOtp(otpValue, email, role);
   
       if (response.success) {
-        navigate("/");
+        if (response.success) {
+          if (response.role === "driver") {
+            localStorage.removeItem("Driveremail");
+            toast.info("Please wait for admin verification.", {
+              position: "top-center",
+              autoClose: 2000,
+            });
+            navigate("/login");
+        } else {
+          localStorage.removeItem("email");
+  
+          toast.success("Your registration was successful!", {
+            position: "top-center",
+            autoClose: 2000,
+          });
+          navigate("/home");
+        }
       } else {
         setError("Invalid OTP. Please try again.");
       }
-    } catch (error:any) {
-      toast.error(error, { position: "top-center", autoClose: 2000 });
+    }
+  } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : "An unexpected error occurred.";
+      toast.error(errorMessage, { position: "top-center", autoClose: 2000 });
     }
   };
   
@@ -88,13 +114,13 @@ const OTPVerification = () => {
     <div className="flex justify-center items-center min-h-screen bg-gradient-to-r from-blue-500 to-purple-600 relative">
       {/* Background Shadow Text */}
       <h1 className="absolute text-[6rem] md:text-[8rem] font-extrabold text-white opacity-10 select-none top-1/4 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-0">
-        SARATHI
+        SARATHI 
       </h1>
 
       {/* OTP Card */}
       <Card className="p-6 shadow-2xl w-96 bg-white/90 backdrop-blur-md relative z-10">
         <Typography variant="h5" className="text-center text-blue-700 font-bold mb-4">
-          {role === "driver" ? "Driver OTP Verification" : "User OTP Verification"}
+          {role === "drivers" ? "Driver OTP Verification" : "User OTP Verification"}
         </Typography>
 
         {/* OTP Input Boxes */}

@@ -17,15 +17,7 @@ import DocumentsVerify from "../driver/Documents";
 
 const AppRoutes = () => {
   return (
-    // <Router>
-    //   <Routes>
-    //     <Route path="/" element={<Home/>} />
-    //     <Route path="/foot" element={<Footer/>} />
-    //     <Route path="/nav" element={<Navbar/>} />
-    //     <Route path="/user" element={<UserRegister/>}/>
-    //     <Route path="/otp-verification" element={<OTPVerification/>}/>
-    //   </Routes>
-    // </Router>
+    
     <BrowserRouter basename="/">
       <Routes  >
         <Route path="/" element={<Body/>}>
@@ -43,7 +35,7 @@ const AppRoutes = () => {
         <Route path="/driver-location" element={<ProfileLocation/>}/>
         <Route path="/driver-otpverification" element={<DriverOTPVerification/>}/>
        
-        <Route path="/docs" element={<DocumentsVerify/>}/>
+        <Route path="/verify-documents" element={<DocumentsVerify/>}/>
       </Routes>
     
     </BrowserRouter>

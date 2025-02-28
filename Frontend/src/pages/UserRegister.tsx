@@ -59,10 +59,10 @@ const RegisterUser = () => {
       setLoading(true);
       try {
      
-      await ApiService.registerUser(formData, "drivers");
+      await ApiService.registerUser(formData, "users");
         
         localStorage.setItem("email", formData.email);
-        navigate("/otp-verification?role=user");
+        navigate("/otp-verification?role=users");
       } catch (error: any) {
         toast.error(error, { position: "top-center", autoClose: 2000 });
       } finally {

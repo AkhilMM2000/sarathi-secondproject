@@ -1,101 +1,123 @@
-import { useState } from "react";
-import { Button, Typography, Card, Avatar } from "@mui/material";
+import { useState, useRef, useEffect } from "react";
+import { Button, Typography, Card, TextField} from "@mui/material";
 import { toast, ToastContainer } from "react-toastify";
 import { useNavigate } from "react-router-dom";
-import Api from "../services/Api";
 
 const ProfileLocation = () => {
   const navigate = useNavigate();
+  const [location, setLocation] = useState<google.maps.LatLngLiteral | null>(null);
+  const [address, setAddress] = useState("");
+  const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
+  const mapRef = useRef<HTMLDivElement | null>(null);
+console.log(location);
 
-  const [profileImage, setProfileImage] = useState<File | null>(null);
-  const [preview, setPreview] = useState<string | null>(null);
-  const [location, setLocation] = useState<{ latitude: number; longitude: number } | null>(null);
-
-  // Handle profile image upload
-  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (event.target.files && event.target.files[0]) {
-      const file = event.target.files[0];
-      setProfileImage(file);
-      setPreview(URL.createObjectURL(file));
-    }
-  };
-
-  // Handle image upload & location selection
-  const handleSelectLocation = async () => {
-    if (!profileImage) {
-      toast.error("Please select an image before uploading.");
+  useEffect(() => {
+    if (!window.google) {
+      toast.error("Google Maps API is not loaded");
       return;
     }
 
-    try {
-      // Upload Image to Cloudinary
-      const imageUrl = await Api.uploadImage(profileImage);
-      if (!imageUrl) throw new Error("Failed to upload image");
+    const autocomplete = new google.maps.places.Autocomplete(
+      document.getElementById("autocomplete") as HTMLInputElement,
+      { types: ["geocode"], componentRestrictions: { country: "IN" } }
+    );
+    autocompleteRef.current = autocomplete;
 
-      localStorage.setItem("driverProfileImage", imageUrl);
-      toast.success("Profile image uploaded successfully!");
+    autocomplete.addListener("place_changed", () => {
+      const place = autocomplete.getPlace();
+      if (!place.geometry || !place.geometry.location) {
+        toast.error("Invalid location");
+        return;
+      }
+      const lat = place.geometry.location.lat();
+      const lng = place.geometry.location.lng();
+      setLocation({ lat: lat, lng: lng });
+      setAddress(place.formatted_address || "");
+      localStorage.setItem("driverLocation", JSON.stringify({ latitude: lat, longitude: lng }));
+    });
+  }, []);
 
-      // Get browser location and store it
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const { latitude, longitude } = position.coords;
-          const locationData = { latitude, longitude };
-          
-          setLocation(locationData); // Update state
-          localStorage.setItem("driverLocation", JSON.stringify(locationData));
-          
-          toast.success("Location selected successfully!");
-          navigate("/docs"); // Navigate only after setting location
-        },
-        () => toast.error("Failed to get location. Please enable location access.")
-      );
-    } catch (error) {
-      toast.error("Image upload failed. Try again.");
+  useEffect(() => {
+    if (location && mapRef.current) {
+      const map = new google.maps.Map(mapRef.current, {
+        center: location,
+        zoom: 14,
+      });
+      new google.maps.Marker({ position: location, map });
     }
-  };
+  }, [location]);
 
   return (
-    <div className="flex justify-center items-center min-h-screen bg-gradient-to-r from-blue-500 to-green-500 relative">
-      <ToastContainer />
-      <Card className="p-6 shadow-2xl w-96 bg-white/90 backdrop-blur-md relative z-10 border-l-4 border-blue-600">
-        <Typography variant="h5" className="text-center text-blue-700 font-bold mb-4">
-          Upload Profile & Select Location
+    <div className="flex flex-col items-center min-h-screen bg-gradient-to-r from-purple-600 to-indigo-800 p-4 sm:p-6 md:p-8">
+    <ToastContainer />
+    <Card className="p-6 sm:p-8 shadow-2xl w-full max-w-md bg-white rounded-xl border-0">
+      <div className="space-y-6">
+        <Typography variant="h5" className="text-center font-bold text-gray-800">
+          Select Your Location
         </Typography>
-
-        {/* Profile Image Upload */}
-        <div className="flex flex-col items-center">
-          <label htmlFor="profile-upload" className="cursor-pointer">
-            <Avatar src={preview || "/default-avatar.png"} sx={{ width: 100, height: 100 }} />
-          </label>
-          <input type="file" id="profile-upload" accept="image/*" className="hidden" onChange={handleImageUpload} />
-          <Typography variant="body2" className="text-gray-600 mt-2">
-            Click to upload profile picture
-          </Typography>
-        </div>
-
-        {/* Location Selection */}
-        <div className="mt-6 flex flex-col items-center">
-          <Button variant="contained" sx={{ backgroundColor: "#0288d1", color: "white" }} onClick={handleSelectLocation}>
-            Select Location
-          </Button>
+        
+        <div className="relative">
+          <TextField
+            id="autocomplete"
+            label="Enter location"
+            variant="outlined"
+            fullWidth
+            className="mb-2"
+            InputProps={{
+              startAdornment: (
+                <span className="text-gray-400 mr-2">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
+                  </svg>
+                </span>
+              ),
+            }}
+          />
+          
           {location && (
-            <Typography className="text-sm text-green-700 mt-2">
-              Latitude: {location.latitude}, Longitude: {location.longitude}
-            </Typography>
+            <div className="flex items-center mt-2 px-3 py-2 bg-green-50 rounded-lg">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-green-500 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+              </svg>
+              <Typography className="text-sm text-green-700 font-medium">
+                Selected: {address}
+              </Typography>
+            </div>
           )}
         </div>
-
-        {/* Next Button */}
+        
+        {/* Enhanced Map Container */}
+        <div className="rounded-xl overflow-hidden shadow-lg border border-gray-200">
+          <div ref={mapRef} className="h-72 sm:h-80 w-full" />
+        </div>
+        
         <Button
           variant="contained"
-          sx={{ backgroundColor: "#ff9800", color: "white", marginTop: "20px" }}
           fullWidth
-          onClick={handleSelectLocation}
+          onClick={() => navigate("/verify-documents")}
+          disabled={!location}
+          sx={{ 
+            py: "10px",
+            backgroundColor: "#4f46e5", 
+            color: "white",
+            borderRadius: "0.75rem",
+            fontWeight: "600",
+            boxShadow: "0 10px 15px -3px rgba(79, 70, 229, 0.3)",
+            "&:hover": {
+              backgroundColor: "#4338ca"
+            },
+            "&:disabled": {
+              backgroundColor: "#9ca3af",
+              color: "white"
+            }
+          }}
         >
-          Next
+          Continue to Document Verification
         </Button>
-      </Card>
-    </div>
+      </div>
+    </Card>
+  </div>
+  
   );
 };
 

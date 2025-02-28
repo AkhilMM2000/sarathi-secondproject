@@ -19,25 +19,52 @@ export class VerifyOTP {
     const store = UserRegistrationStore.getInstance();
     const userData = store.getUser(email);
 
-    if (!userData) throw new Error("Register again Data not find");
+    console.log("✅ Reached OTP verification");
+    console.log("📌 Retrieved user data:", userData, `Role: ${role}`);
+
+    if (!userData) throw new Error("Register again, data not found");
     if (userData.otp !== otp || userData.otpExpires < new Date()) throw new Error("Invalid or expired OTP");
 
-    store.removeUser(email);
+    console.log("✅ OTP Verified!");
 
     // Choose repository based on role
     const repository = role === "user" ? this.userRepository : this.driverRepository;
 
-    // Save user/driver in DB
-    const user = await repository.create(userData);
+    let savedUser;
+    if (role === "driver") {
+      // Remove unwanted fields before saving
+      const { otp, otpExpires, confirmPassword, ...driverData } = userData;
 
+      // Ensure necessary fields are set for drivers
+      driverData.status = "pending";
+      driverData.isBlock = false;
+      driverData.role = "driver";
+
+      console.log("📌 Saving driver to DB:", driverData);
+
+      // Save driver in the database
+      savedUser = await repository.create(driverData);
+    } else {
+      console.log("📌 Saving user to DB:", userData);
+      savedUser = await repository.create(userData);
+    }
+
+    // Remove from temporary store after successful save
+    store.removeUser(email);
+
+    if (!savedUser) console.log('user data doesnt get to you');
+    
+    console.log("✅ User successfully saved:", savedUser);
+
+    // Generate JWT Tokens
     const accessToken = jwt.sign(
-      { id: user._id, role },
+      { id: savedUser._id, role },
       process.env.ACCESS_TOKEN_SECRET as string,
       { expiresIn: "15m" }
     );
 
     const refreshToken = jwt.sign(
-      { id: user._id, role },
+      { id: savedUser._id, role },
       process.env.REFRESH_TOKEN_SECRET as string,
       { expiresIn: "7d" }
     );
@@ -48,9 +75,11 @@ export class VerifyOTP {
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
+    console.log("✅ Tokens generated & refreshToken set in cookies");
+
     return {
       accessToken,
-      user: { id: user._id, role },
+      user: { id: savedUser._id, role },
     };
   }
 }

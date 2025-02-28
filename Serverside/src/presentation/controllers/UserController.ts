@@ -25,7 +25,10 @@ export class UserController {
       console.log(req.body);
       
       const verifyOTP = container.resolve(VerifyOTP);
+      
       const result = await verifyOTP.execute(req,res,email, otp,'user');
+   
+      
       res.status(200).json({ success: true, ...result });
     } catch (error) {
       res.status(400).json({ success: false, error: error|| "OTP verification failed" });

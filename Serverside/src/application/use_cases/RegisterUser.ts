@@ -13,6 +13,7 @@ export class RegisterUser {
    
 
 
+
     // Check if user already exists in memory (to prevent resending OTP)
     if (store.getUser(email)) throw new Error("OTP already sent to this email");
 
@@ -22,6 +23,7 @@ export class RegisterUser {
 
     // Store user data temporarily
     store.addUser(email, { name, email, mobile, password, referralCode, otp, otpExpires });
+console.log(store.getUser(email),'for user');
 
     // Send OTP to email
     await this.emailService.sendOTP(email, otp);

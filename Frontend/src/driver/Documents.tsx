@@ -1,91 +1,137 @@
-import React, { useState ,ChangeEvent,MouseEvent} from "react";
+import React, { useState, ChangeEvent, MouseEvent } from "react";
 import { toast, ToastContainer } from "react-toastify";
 import Api from "../services/Api";
 import { useNavigate } from "react-router-dom";
 
 const DocumentsVerify = () => {
+  const MAX_FILE_SIZE = 3 * 1024 * 1024; // 2MB
+const ALLOWED_FILE_TYPES = ["image/jpeg", "image/png", "application/pdf"];
   const [aadhaarFile, setAadhaarFile] = useState<File | null>(null);
   const [aadhaarPreview, setAadhaarPreview] = useState<string | null>(null);
-  
   const [licenseFile, setLicenseFile] = useState<File | null>(null);
   const [licensePreview, setLicensePreview] = useState<string | null>(null);
-
   const [aadhaarNumber, setAadhaarNumber] = useState<string>("");
-const [licenseNumber, setLicenseNumber] = useState<string>("");
-const navigate=useNavigate()
-  const handleInputChange = (event: ChangeEvent<HTMLInputElement>, setValue: React.Dispatch<React.SetStateAction<string>>) => {
-  setValue(event.target.value);
-};
+  const [licenseNumber, setLicenseNumber] = useState<string>("");
+
+
+  const navigate = useNavigate();
+
+  // Handle input changes for Aadhaar & License Number
+  const handleInputChange = (
+    event: ChangeEvent<HTMLInputElement>,
+    setValue: React.Dispatch<React.SetStateAction<string>>
+  ) => {
+    setValue(event.target.value);
+  };
 
   const handleFileChange = (
     event: ChangeEvent<HTMLInputElement>,
     setFile: React.Dispatch<React.SetStateAction<File | null>>,
-    setPreview: React.Dispatch<React.SetStateAction<string | null>>
+    setPreview: React.Dispatch<React.SetStateAction<string | null>>,
+    fileType: string
   ) => {
     const file = event.target.files?.[0];
-    if (file) {
-      setFile(file);
-      setPreview(URL.createObjectURL(file)); // Generate preview URL
+    if (!file) return;
+  
+    // Validate file type
+    if (!ALLOWED_FILE_TYPES.includes(file.type)) {
+      toast.error(`${fileType} must be a JPEG, PNG, or PDF file.`,{autoClose:1000});
+      setFile(null);
+      setPreview(null);
+      return;
+    }
+  
+    // Validate file size
+    if (file.size > MAX_FILE_SIZE) {
+      toast.error(`${fileType} must be smaller than 3MB.`,{autoClose:1000});
+      setFile(null);
+      setPreview(null); // Prevent preview from being set
+      return;
+    }
+  
+    setFile(file);
+  
+    // Set preview only for images within allowed size
+    if (file.type.startsWith("image/")) {
+      setPreview(URL.createObjectURL(file));
+    } else {
+      setPreview(null); // No preview for PDFs
     }
   };
-  
+  // Retrieve driver details from localStorage
   const getDriverData = () => {
-
     const driverProfileImage = localStorage.getItem("driverProfileImage") || "";
     const driverLocation = JSON.parse(localStorage.getItem("driverLocation") || "{}");
     const driverRegisterData = JSON.parse(localStorage.getItem("driverRegisterData") || "{}");
-  
+
+    if (driverRegisterData.email) {
+      localStorage.setItem("Driveremail", driverRegisterData.email);
+    }
+
     return {
       ...driverRegisterData,
-      profileImage: driverProfileImage, // Adding image URL
-      location: driverLocation, // Adding location
-      aadhaarNumber, 
-    licenseNumber
+      profileImage: driverProfileImage,
+      location: driverLocation,
+      aadhaarNumber,
+      licenseNumber,
     };
   };
-  const handleSubmit=async(e:MouseEvent<HTMLButtonElement>)=>{
-  e.preventDefault()
-    if (!aadhaarFile||!licenseFile||!aadhaarNumber||!licenseNumber) {
-        toast.error("Please upload all the documents data before submiting");
-        return;
+
+  // Handle form submission
+  const handleSubmit = async (e: MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    
+    if (!aadhaarFile || !licenseFile || !aadhaarNumber || !licenseNumber) {
+      toast.error("Please fill in all fields and upload documents.");
+      return;
+    }
+
+    try {
+      // Step 1: Request signed URLs for both documents
+      const signedUrls = await Api.getSignedUrls("image/png", "aadhaar");
+      const { aadhaarSignedUrl, licenseSignedUrl } = signedUrls;
+console.log(signedUrls);
+console.log(aadhaarFile);
+
+
+      if (!aadhaarSignedUrl || !licenseSignedUrl) {
+        throw new Error("Failed to retrieve signed upload URLs.");
       }
-      try {
-        const [aadhaarImageUrl, licenseImageUrl] = await Promise.all([
-          Api.uploadImage(aadhaarFile),
-          Api.uploadImage(licenseFile),
-        ]);
-              if (!aadhaarImageUrl||!licenseImageUrl) throw new Error("Failed to upload image");
-              const driverData ={
-                ...getDriverData(),
-                aadhaarImage: aadhaarImageUrl, // Aadhaar image URL
-                licenseImage: licenseImageUrl, // License image URL
-              };
-          
-              console.log("Final Data to Send:", driverData);
 
-              const response = await Api.registerUser(driverData, "drivers");
+      // Step 2: Upload files to Cloudinary using the signed URLs
+      const [aadhaarImageUrl, licenseImageUrl] = await Promise.all([
+        Api.uploadFile(aadhaarFile, aadhaarSignedUrl),
+        Api.uploadFile(licenseFile, licenseSignedUrl),
+      ]);
 
-              if (response.success) {
-                toast.success("Registration successful! Please wait for admin verification.");
-                
-                // Clear local storage
-                localStorage.removeItem("driverProfileImage");
-                localStorage.removeItem("driverLocation");
-                localStorage.removeItem("driverRegisterData");
-          
-                // Navigate to driver login
-                setTimeout(() => {
-                  navigate("/driverlogin");
-                }, 2000); // Wait for 2 seconds before navigating
-              } else {
-                throw new Error(response.message || "Registration failed");
-              }
-            } catch (error) {
-              const errorMessage =
-    error instanceof Error ? error.message : "An error occurred during registration";
-              toast.error(errorMessage);
-            }
-  }
+      // Step 3: Send uploaded file URLs along with other data to backend
+      const driverData = {
+        ...getDriverData(),
+        aadhaarImage: aadhaarImageUrl,
+        licenseImage: licenseImageUrl,
+      };
+
+      const response = await Api.registerUser(driverData, "drivers");
+
+      if (response.success) {
+        toast.success("Registration successful! Awaiting admin verification.");
+
+        // Clear local storage
+        localStorage.removeItem("driverProfileImage");
+        localStorage.removeItem("driverLocation");
+        localStorage.removeItem("driverRegisterData");
+
+        // Navigate after a short delay
+        setTimeout(() => {
+          navigate("/otp-verification?role=drivers");
+        }, 2000);
+      } else {
+        throw new Error(response.message || "Registration failed");
+      }
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "An error occurred during registration");
+    }
+  };
  
   return (
     <div className=" bg-gradient-to-r from-blue-200 to-blue-400 min-h-screen flex items-center justify-center p-4">
@@ -114,8 +160,8 @@ const navigate=useNavigate()
                   type="file"
                   className="hidden"
                   id="aadhaar-upload"
-                  accept="image/*"
-              onChange={(e) => handleFileChange(e, setAadhaarFile, setAadhaarPreview)}
+                  accept="image/jpeg, image/png, application/pdf"
+  onChange={(e) => handleFileChange(e, setAadhaarFile, setAadhaarPreview, "Aadhaar Card")}
                 />
                 <label
                   htmlFor="aadhaar-upload"
@@ -149,8 +195,9 @@ const navigate=useNavigate()
                   type="file"
                   className="hidden"
                   id="license-upload"
-                  accept="image/*"
-                  onChange={(e) => handleFileChange(e, setLicenseFile, setLicensePreview)} 
+                  
+                  accept="image/jpeg, image/png, application/pdf"
+  onChange={(e) => handleFileChange(e, setLicenseFile, setLicensePreview, "License")} 
                 />
                 <label
                   htmlFor="license-upload"

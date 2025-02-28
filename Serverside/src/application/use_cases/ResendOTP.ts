@@ -8,7 +8,7 @@ export class ResendOTP {
   async execute(email: string, role: string) {
     const store = UserRegistrationStore.getInstance();
     const existingUser = store.getUser(email);
-console.log(existingUser);
+
 
     if (!existingUser) {
       throw new Error("No pending registration found. Please sign up again.");
