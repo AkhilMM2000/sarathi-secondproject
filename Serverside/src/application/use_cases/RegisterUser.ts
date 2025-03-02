@@ -12,8 +12,6 @@ export class RegisterUser {
     const store = UserRegistrationStore.getInstance();
    
 
-
-
     // Check if user already exists in memory (to prevent resending OTP)
     if (store.getUser(email)) throw new Error("OTP already sent to this email");
 
@@ -31,4 +29,5 @@ console.log(store.getUser(email),'for user');
 
     return { message: "OTP sent to email" };
   }
+  
 }

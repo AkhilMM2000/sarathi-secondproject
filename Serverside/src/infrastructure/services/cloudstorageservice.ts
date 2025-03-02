@@ -1,5 +1,6 @@
 import { injectable } from "tsyringe";
 import { v2 as cloudinary } from "cloudinary";
+import crypto from 'crypto'
 import { IFileStorageService } from "../../domain/services/IFileStorageService";
 type SignedUrlResponse = {
   cloud_name: string | undefined;
@@ -24,9 +25,10 @@ export class CloudinaryFileStorageService implements IFileStorageService {
     try {
       const timestamp = Math.round(new Date().getTime() / 1000);
       const publicId = `uploads/${fileName}-${timestamp}`;
-
+      const folder = "private"; // Ensure folder is included
       const signature = cloudinary.utils.api_sign_request(
-        { public_id: publicId, timestamp },
+     
+        { folder, public_id: publicId, timestamp },
         process.env.CLOUDINARY_API_SECRET as string
       );
 
@@ -36,7 +38,7 @@ export class CloudinaryFileStorageService implements IFileStorageService {
         public_id: publicId,
         timestamp,
         signature,
-        folder: "uploads",
+        folder
       };
     } catch (error) {
       throw new Error("Failed to generate signed URL for upload");

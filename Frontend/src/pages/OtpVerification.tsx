@@ -64,10 +64,11 @@ const OTPVerification = () => {
   
     try {
       const response = await ApiService.verifyOtp(otpValue, email, role);
+  console.log(response.user.role);
   
       if (response.success) {
         if (response.success) {
-          if (response.role === "driver") {
+          if (response.user.role === "driver") {
             localStorage.removeItem("Driveremail");
             toast.info("Please wait for admin verification.", {
               position: "top-center",
@@ -88,10 +89,17 @@ const OTPVerification = () => {
       }
     }
   } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : "An unexpected error occurred.";
-      toast.error(errorMessage, { position: "top-center", autoClose: 2000 });
+    let errorMessage = "An unexpected error occurred.";
+
+    if (axios.isAxiosError(error)) {
+      errorMessage = error.response?.data?.error || "Server error occurred.";
+    } else if (error instanceof Error) {
+      errorMessage = error.message;
     }
-  };
+
+    toast.error(errorMessage, { position: "top-center", autoClose: 2000 });
+  }
+}
   
 
   // Handle Resend OTP

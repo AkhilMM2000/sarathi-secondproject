@@ -63,9 +63,9 @@ export default function DriverRegister() {
     }
 
     setError("");
-    
+    const { confirmPassword, ...dataToSend } = formData;
     // Store in localStorage before navigating
-    localStorage.setItem("driverRegisterData", JSON.stringify(formData));
+    localStorage.setItem("driverRegisterData", JSON.stringify(dataToSend));
     
     // Navigate to next step
     navigate("/driver-location");

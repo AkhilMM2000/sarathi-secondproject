@@ -9,7 +9,7 @@ const ProfileLocation = () => {
   const [address, setAddress] = useState("");
   const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
   const mapRef = useRef<HTMLDivElement | null>(null);
-console.log(location);
+
 
   useEffect(() => {
     if (!window.google) {

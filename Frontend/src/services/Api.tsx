@@ -22,7 +22,7 @@ class ApiService {
       const response = await axios.post(`${this.baseUrl}/${type}/verify-otp`, { otp, email,role:type });
       return response.data;
     } catch (error: any) {
-      throw error.response?.data?.message || "OTP verification failed";
+      throw error; 
     }
 
   }
@@ -60,7 +60,9 @@ class ApiService {
   }
   
   async uploadFile(file: File, signedData: any): Promise<string> {
+  
     try {
+     
       const formData = new FormData();
       formData.append("file", file);
       formData.append("api_key", signedData.api_key);
@@ -68,11 +70,14 @@ class ApiService {
       formData.append("signature", signedData.signature);
       formData.append("public_id", signedData.public_id);
       formData.append("folder", signedData.folder); // Optional but recommended
+
+
   
       const response = await axios.post(
         `https://api.cloudinary.com/v1_1/${signedData.cloud_name}/image/upload`,
         formData
       );
+  
   
       if (response.status === 200) {
         return response.data.public_id;; // Store this in the database
@@ -81,6 +86,7 @@ class ApiService {
       throw new Error("File upload failed");
     } catch (error: any) {
       throw error.response?.data?.message || "File upload failed";
+  
     }
   }
   

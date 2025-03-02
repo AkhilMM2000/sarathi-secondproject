@@ -6,6 +6,7 @@ import { UserRegistrationStore } from "../../infrastructure/store/UserRegisterSt
 import { User } from "../../domain/models/User";
 import { Request, Response } from "express";
 import dotenv from "dotenv";
+import Driverschema from "../../infrastructure/database/modals/Driverschema";
 
 dotenv.config();
 @injectable()
@@ -34,14 +35,26 @@ export class VerifyOTP {
     if (role === "driver") {
       // Remove unwanted fields before saving
       const { otp, otpExpires, confirmPassword, ...driverData } = userData;
-
+      const existingDriver = await Driverschema.findOne({
+        $or: [
+          { email: driverData.email },
+          { mobile: driverData.mobile },
+          { aadhaarNumber: driverData.aadhaarNumber },
+          { licenseNumber: driverData.licenseNumber },
+        ],
+      });
+      
+      if (existingDriver) {
+        console.error("❌ Duplicate driver found:", existingDriver);
+        throw new Error("A driver with this email, mobile, Aadhaar, or license number already exists.");
+      }
       // Ensure necessary fields are set for drivers
       driverData.status = "pending";
       driverData.isBlock = false;
       driverData.role = "driver";
 
       console.log("📌 Saving driver to DB:", driverData);
-
+      console.log("📝 Required Schema Fields:", Object.keys(Driverschema.schema.paths));
       // Save driver in the database
       savedUser = await repository.create(driverData);
     } else {
@@ -55,7 +68,7 @@ export class VerifyOTP {
     if (!savedUser) console.log('user data doesnt get to you');
     
     console.log("✅ User successfully saved:", savedUser);
-
+    console.log("📝 Required Schema Fields:", Object.keys(Driverschema.schema.paths));
     // Generate JWT Tokens
     const accessToken = jwt.sign(
       { id: savedUser._id, role },

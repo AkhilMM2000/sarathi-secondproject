@@ -1,27 +1,29 @@
 import { inject, injectable } from "tsyringe";
 import { IUserRepository } from "../../domain/repositories/IUserepository"; 
-// import { IDriverRepository } from "../../domain/repositories/IDriverRepository";
+import { IDriverRepository } from "../../domain/repositories/IDriverepository";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { Request, Response } from "express";
 import dotenv from "dotenv";
+import { User } from "../../domain/models/User";
+import { Driver } from "../../domain/models/Driver"
 
 dotenv.config();
 @injectable()
 export class Login {
   constructor(
     @inject("IUserRepository") private userRepository: IUserRepository,
-    // @inject("IDriverRepository") private driverRepository: IDriverRepository
+    @inject("IDriverRepository") private driverRepository: IDriverRepository
   ) {}
-
+  
   async execute(req:Request,res:Response,email: string, password: string) {
-    let user = await this.userRepository.findByEmail(email);
+    let user:User | Driver | null = await this.userRepository.findByEmail(email);
     let role: "user" | "driver" | "admin" | null = user ? "user" : null;
 
-    // if (!user) {
-    //   user = await this.driverRepository.findByEmail(email);
-    //   role = user ? "driver" : null;
-    // }
+    if (!user) {
+      user = await this.driverRepository.findByEmail(email);
+      role = user ? "driver" : null;
+    }
 
     if (!user) throw new Error("Invalid email or password");
 

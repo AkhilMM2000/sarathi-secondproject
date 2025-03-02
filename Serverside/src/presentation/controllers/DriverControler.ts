@@ -34,7 +34,8 @@ export class DriverController {
           const result = await verifyOTP.execute(req,res,email, otp,'driver');
           res.status(200).json({ success: true, ...result });
         } catch (error) {
-          res.status(400).json({ success: false, error: "p" });
+          res.status(400).json({ success: false, 
+            error: error instanceof Error ? error.message : "Unknown error occurred"  });
         }
       }
 

@@ -9,7 +9,7 @@ const DriverSchema = new Schema<IDriver>(
     email: { type: String, required: true, unique: true },
     mobile: { type: String, required: true, unique: true },
     password: { type: String, required: true },
-    profileImage: { type: String, required: true },
+    profileImage: { type: String },
     location: {
       latitude: { type: Number, required: true },
       longitude: { type: Number, required: true },

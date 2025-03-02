@@ -12,7 +12,7 @@ const ALLOWED_FILE_TYPES = ["image/jpeg", "image/png", "application/pdf"];
   const [licensePreview, setLicensePreview] = useState<string | null>(null);
   const [aadhaarNumber, setAadhaarNumber] = useState<string>("");
   const [licenseNumber, setLicenseNumber] = useState<string>("");
-
+  const [isLoading, setIsLoading] = useState(false);
 
   const navigate = useNavigate();
 
@@ -87,11 +87,13 @@ const ALLOWED_FILE_TYPES = ["image/jpeg", "image/png", "application/pdf"];
     }
 
     try {
+      setIsLoading(true);
       // Step 1: Request signed URLs for both documents
-      const signedUrls = await Api.getSignedUrls("image/png", "aadhaar");
-      const { aadhaarSignedUrl, licenseSignedUrl } = signedUrls;
-console.log(signedUrls);
-console.log(aadhaarFile);
+      const aadhaarSignedUrl = await Api.getSignedUrls("image/png", "aadhaar");
+      const licenseSignedUrl= await Api.getSignedUrls("image/png", "license");
+    
+    
+      
 
 
       if (!aadhaarSignedUrl || !licenseSignedUrl) {
@@ -100,16 +102,21 @@ console.log(aadhaarFile);
 
       // Step 2: Upload files to Cloudinary using the signed URLs
       const [aadhaarImageUrl, licenseImageUrl] = await Promise.all([
-        Api.uploadFile(aadhaarFile, aadhaarSignedUrl),
-        Api.uploadFile(licenseFile, licenseSignedUrl),
+        Api.uploadFile(aadhaarFile, aadhaarSignedUrl.signedUrl),
+        Api.uploadFile(licenseFile, licenseSignedUrl.signedUrl),
       ]);
-
+      
+     
+    
+      
       // Step 3: Send uploaded file URLs along with other data to backend
       const driverData = {
         ...getDriverData(),
         aadhaarImage: aadhaarImageUrl,
         licenseImage: licenseImageUrl,
       };
+
+   
 
       const response = await Api.registerUser(driverData, "drivers");
 
@@ -217,8 +224,9 @@ console.log(aadhaarFile);
             
             <button className="w-full bg-blue-700 hover:bg-blue-800 text-white py-3 rounded-md mt-4 font-medium transition"
             onClick={ handleSubmit}
+            disabled={isLoading}
             >
-              Verify
+          {isLoading ? "Loading..." : "Verify"}
             </button>
           </div>
         </div>
