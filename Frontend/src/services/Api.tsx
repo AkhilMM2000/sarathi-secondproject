@@ -89,7 +89,19 @@ class ApiService {
   
     }
   }
-  
+
+  async Login(formData: Record<string, any>, type: "users" | "drivers") {
+    try {
+      const payload = { ...formData, role: type === "drivers" ? "driver" : "user" }; // Add role dynamically
+
+      const response = await axios.post(`${this.baseUrl}/${type}/login`, payload, {
+        headers: { "Content-Type": "application/json" },
+      });
+      return response.data;
+    } catch (error: any) {
+      throw error; 
+    }
+  }
   
 }
 

@@ -7,6 +7,7 @@ import cookieParser from "cookie-parser";
 import driverRoute from './presentation/routes/driverRoutes'
 import fileroute from './presentation/routes/fileRoutes'
 import cors from 'cors'
+import { errorHandler } from "./middleware/errorHandler";
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -18,17 +19,15 @@ app.use(cors({
   credentials: true,  // Allow cookies (like JWT tokens) to be sent
 }));
 
-
 // Routes
 app.use("/api/users", userRoutes);
 app.use('/api/drivers',driverRoute)
 app.use("/api/files", fileroute); 
 const PORT = process.env.PORT||3000;
 
-app.use((err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
-  console.error(err);
-  res.status(500).json({ message: err.message || "Internal Server Error" });
-})
+app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+  errorHandler(err, req, res, next);
+});
 
 // Start Server
 connectDB().then(() => {

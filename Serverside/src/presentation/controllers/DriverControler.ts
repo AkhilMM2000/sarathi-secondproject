@@ -6,6 +6,7 @@ import { ResendOTP } from "../../application/use_cases/ResendOTP";
 import { Login } from "../../application/use_cases/Login";
 import { RefreshToken } from "../../application/use_cases/Refreshtoken";
 import { RegisterDriver } from "../../application/use_cases/RegisterDriver";
+import { AuthError } from "../../domain/errors/Autherror";
 
 export class DriverController {
 
@@ -39,5 +40,32 @@ export class DriverController {
         }
       }
 
+      static async login(req: Request, res: Response) {
+        try {
+          const { email, password,role } = req.body;
+          console.log(req.body);
+          
+          const loginUseCase = container.resolve(Login);
+          const { accessToken, refreshToken } = await loginUseCase.execute(email, password,role);
     
+          // Set refresh token cookie
+          const refreshTokenKey = `${role}RefreshToken`;
+          res.cookie(refreshTokenKey, refreshToken, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production",
+            maxAge: 7 * 24 * 60 * 60 * 1000,
+          });
+    
+          return res.json({ accessToken, role });
+        } catch (error) {
+          if (error instanceof AuthError) {
+            return res.status(error.statusCode).json({
+              success: false,
+              error: error.message, 
+            });
+          }
+          
+          return res.status(500).json({ success: false, error: "Something went wrong" });
+        }
+      }
 }

@@ -53,14 +53,14 @@ export class UserController {
   static async login(req: Request, res: Response) {
     try {
       const login = container.resolve(Login);
-      const { email, password } = req.body;
-      const result = await login.execute(req,res,email, password);
+      const { email, password,role } = req.body;
+      const result = await login.execute(email, password,role);
 
       res.status(200).json({
         success: true,
         message: "Login successful",
         accessToken: result.accessToken,
-        user: result.user,
+     
       });
     } catch (error) {
       res.status(400).json({ success: false, error: error || "Login failed" });
