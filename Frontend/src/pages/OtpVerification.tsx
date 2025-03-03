@@ -74,7 +74,7 @@ const OTPVerification = () => {
               position: "top-center",
               autoClose: 2000,
             });
-            navigate("/login");
+            navigate("/login?type=driver");
         } else {
           localStorage.removeItem("email");
   

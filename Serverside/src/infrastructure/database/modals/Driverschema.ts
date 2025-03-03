@@ -1,6 +1,6 @@
 import mongoose, { Schema, Document } from "mongoose";
 import { Driver } from "../../../domain/models/Driver";
-
+import bcrypt from "bcryptjs";
 export interface IDriver extends  Omit<Driver, "_id">,Document {} 
 
 const DriverSchema = new Schema<IDriver>(
@@ -30,5 +30,15 @@ const DriverSchema = new Schema<IDriver>(
 
   { timestamps: true }
 );
+DriverSchema.pre("save", async function (next) {
+  if (!this.isModified("password")) return next();
 
+  try {
+    const salt = await bcrypt.genSalt(10);
+    this.password = await bcrypt.hash(this.password, salt);
+    next();
+  } catch (error) {
+    next(error as Error);
+  }
+});
 export default mongoose.model<IDriver>("Driver", DriverSchema);
