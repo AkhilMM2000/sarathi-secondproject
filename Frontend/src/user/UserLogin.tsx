@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { toast, ToastContainer} from "react-toastify";
-import ApiService from '../services/Api'
+import ApiService from '../Api/ApiService';
+import GoogleAuthButton from '../components/Googlesign'; 
+import ForgotPasswordModal from '../components/FogetPassword'; 
 import { 
   Card, 
   CardContent, 
@@ -19,7 +21,6 @@ import {
 } from '@mui/material';
 import { Email, Lock, Visibility, VisibilityOff, DirectionsCar, Person } from '@mui/icons-material';
 import { useLocation, useNavigate } from 'react-router-dom';
-
 
 // Define TypeScript interfaces
 interface LoginData {
@@ -41,11 +42,11 @@ const DualLogin= () => {
   
   const [loading, setLoading] = useState<boolean>(false);
   const [showPassword, setShowPassword] = useState<boolean>(false);
+  const [forgotPasswordOpen, setForgotPasswordOpen] = useState<boolean>(false);
   
   // Theme and responsive breakpoints
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-  const isTablet = useMediaQuery(theme.breakpoints.between('sm', 'md'));
   
   // Update page title based on login type
   useEffect(() => {
@@ -63,6 +64,15 @@ const DualLogin= () => {
   const togglePasswordVisibility = (): void => {
     setShowPassword(!showPassword);
   };
+  
+  // Add these functions for modal control
+  const handleOpenForgotPassword = (): void => {
+    setForgotPasswordOpen(true);
+  };
+
+  const handleCloseForgotPassword = (): void => {
+    setForgotPasswordOpen(false);
+  };
 
   const handleSubmit = async(e: React.FormEvent<HTMLFormElement>)=> {
     e.preventDefault();
@@ -77,22 +87,20 @@ const DualLogin= () => {
     try {
       const role = loginType === "driver" ? "drivers" : "users";
      
- 
       // Call API Service for login
       const response = await ApiService.Login(loginData, role);
   
       if (response?.accessToken) {
         // Store tokens and role
-        localStorage.setItem("accessToken", response.accessToken);
-        localStorage.setItem("role", response.role);
-  
+        localStorage.setItem(`${response.role}_accessToken`, response.accessToken);
+        
         toast.success("Login successful!");
   
         // Redirect based on role
         if (response.role === "driver") {
-          navigate("/driver/dashboard");
+          navigate("/driverHome", { replace: true });
         } else {
-          navigate("/user/dashboard");
+          navigate("/userhome",{ replace: true });
         }
       } 
     } catch (error: any) {
@@ -125,31 +133,30 @@ const DualLogin= () => {
         transition: 'background 0.3s ease'
       }}
     >
-      <Container maxWidth="sm" sx={{ px: { xs: 1, sm: 2, md: 3 } }}>
+      <Container maxWidth="sm" sx={{ px: { xs: 1, sm: 2 } }}>
         <Card 
           elevation={10} 
           sx={{ 
             borderRadius: { xs: 2, sm: 3 }, 
             overflow: 'hidden',
             transition: 'all 0.3s ease',
-            transform: 'scale(1)',
             '&:hover': {
               transform: { xs: 'none', sm: 'scale(1.01)' },
             }
           }}
         >
-          <CardContent sx={{ p: { xs: 2, sm: 3, md: 4 } }}>
+          <CardContent sx={{ p: { xs: 2, sm: 2.5 } }}>
             {/* Login Type Indicator */}
             <Box sx={{ 
               position: 'absolute', 
-              top: { xs: 10, sm: 15 }, 
-              right: { xs: 10, sm: 15 },
+              top: { xs: 8, sm: 10 }, 
+              right: { xs: 8, sm: 10 },
               bgcolor: loginType === 'driver' ? 'warning.dark' : 'primary.main',
               color: 'white',
-              px: 2,
-              py: 0.5,
+              px: 1.5,
+              py: 0.3,
               borderRadius: 5,
-              fontSize: { xs: '0.65rem', sm: '0.75rem' },
+              fontSize: { xs: '0.6rem', sm: '0.7rem' },
               fontWeight: 'bold',
               textTransform: 'uppercase',
               letterSpacing: '1px'
@@ -158,10 +165,10 @@ const DualLogin= () => {
             </Box>
             
             {/* Logo and Title */}
-            <Box sx={{ textAlign: 'center', mb: { xs: 2, sm: 3, md: 4 }, mt: { xs: 1, sm: 1 } }}>
+            <Box sx={{ textAlign: 'center', mb: { xs: 1, sm: 1.5 }, mt: { xs: 0.5, sm: 0.5 } }}>
               {loginType === 'driver' ? 
-                <DirectionsCar sx={{ fontSize: { xs: 40, sm: 50 }, color: 'warning.dark', mb: 1 }} /> : 
-                <Person sx={{ fontSize: { xs: 40, sm: 50 }, color: 'primary.main', mb: 1 }} />
+                <DirectionsCar sx={{ fontSize: { xs: 32, sm: 40 }, color: 'warning.dark', mb: 0.5 }} /> : 
+                <Person sx={{ fontSize: { xs: 32, sm: 40 }, color: 'primary.main', mb: 0.5 }} />
               }
               
               <Typography 
@@ -174,17 +181,17 @@ const DualLogin= () => {
               </Typography>
               
               <Typography 
-                variant={isMobile ? "body2" : "subtitle1"} 
+                variant="body2" 
                 color="text.secondary" 
-                sx={{ mt: 1 }}
+                sx={{ mt: 0.5 }}
               >
                 {loginType === 'driver' 
                   ? 'Driver Portal Access' 
-                  : 'Welcome back! Please login to your account'}
+                  : 'Welcome back! Please login'}
               </Typography>
             </Box>
 
-            <Divider sx={{ my: { xs: 1, sm: 2 } }} />
+            <Divider sx={{ my: 1 }} />
 
             {/* Login Form */}
             <form onSubmit={handleSubmit}>
@@ -192,15 +199,15 @@ const DualLogin= () => {
                 label="Email Address"
                 variant="outlined"
                 fullWidth
-                margin="normal"
+                margin="dense"
                 name="email"
                 type="email"
                 value={loginData.email}
                 onChange={handleChange}
                 required
-                size={isMobile ? "small" : "medium"}
+                size="small"
                 InputProps={{
-                  startAdornment: <Email color="action" sx={{ mr: 1 }} />
+                  startAdornment: <Email color="action" sx={{ mr: 1, fontSize: '1.1rem' }} />
                 }}
               />
               
@@ -208,38 +215,41 @@ const DualLogin= () => {
                 label="Password"
                 variant="outlined"
                 fullWidth
-                margin="normal"
+                margin="dense"
                 name="password"
                 type={showPassword ? 'text' : 'password'}
                 value={loginData.password}
                 onChange={handleChange}
                 required
-                size={isMobile ? "small" : "medium"}
+                size="small"
                 InputProps={{
-                  startAdornment: <Lock color="action" sx={{ mr: 1 }} />,
+                  startAdornment: <Lock color="action" sx={{ mr: 1, fontSize: '1.1rem' }} />,
                   endAdornment: (
                     <InputAdornment position="end">
                       <IconButton
                         aria-label="toggle password visibility"
                         onClick={togglePasswordVisibility}
                         edge="end"
-                        size={isMobile ? "small" : "medium"}
+                        size="small"
                       >
-                        {showPassword ? <VisibilityOff /> : <Visibility />}
+                        {showPassword ? <VisibilityOff fontSize="small" /> : <Visibility fontSize="small" />}
                       </IconButton>
                     </InputAdornment>
                   )
                 }}
-                sx={{ mb: 2 }}
+                sx={{ mb: 1 }}
               />
 
-              {/* Forgot Password Link */}
-              <Box sx={{ textAlign: 'right', mb: { xs: 2, sm: 3 } }}>
+              {/* Forgot Password Link - Updated to open modal */}
+              <Box sx={{ textAlign: 'right', mb: 1 }}>
                 <Link 
-                  href="#" 
+                  component="button"
+                  type="button"
+                  variant="body2"
+                  onClick={handleOpenForgotPassword}
                   underline="hover" 
                   color={loginType === 'driver' ? 'warning.dark' : 'primary.main'}
-                  sx={{ fontSize: { xs: '0.8rem', sm: '0.875rem' } }}
+                  sx={{ fontSize: '0.75rem' }}
                 >
                   Forgot Password?
                 </Link>
@@ -253,22 +263,22 @@ const DualLogin= () => {
                 type="submit"
                 disabled={loading}
                 sx={{ 
-                  py: { xs: 1, sm: 1.5 },
-                  fontSize: { xs: '0.875rem', sm: '1rem' },
+                  py: { xs: 0.5, sm: 0.75 },
+                  fontSize: { xs: '0.8rem', sm: '0.875rem' },
                   textTransform: 'none',
                   borderRadius: { xs: 1.5, sm: 2 },
-                  boxShadow: 3,
+                  boxShadow: 2,
                   position: 'relative'
                 }}
               >
                 {loading ? (
                   <>
                     <CircularProgress 
-                      size={isMobile ? 20 : 24} 
+                      size={16} 
                       sx={{ 
                         color: 'white',
                         position: 'absolute',
-                        left: 'calc(50% - 12px)'
+                        left: 'calc(50% - 8px)'
                       }} 
                     />
                     <span style={{ visibility: 'hidden' }}>Login</span>
@@ -278,43 +288,69 @@ const DualLogin= () => {
                 )}
               </Button>
 
+              {/* Separator */}
+              <Box sx={{ display: 'flex', alignItems: 'center', mt: 1.5, mb: 1 }}>
+                <Divider sx={{ flexGrow: 1 }} />
+                <Typography 
+                  variant="body2" 
+                  color="text.secondary" 
+                  sx={{ px: 1, fontSize: '0.7rem' }}
+                >
+                  OR
+                </Typography>
+                <Divider sx={{ flexGrow: 1 }} />
+              </Box>
+
+              {/* Google Auth Button */}
+              <GoogleAuthButton role={loginType} />
+
               {/* Switch Login Type */}
-              <Box sx={{ textAlign: 'center', mt: { xs: 2, sm: 3 } }}>
+              <Box sx={{ textAlign: 'center', mt: 1 }}>
                 <Button
                   variant="text"
                   color={loginType === 'driver' ? 'warning' : 'primary'}
                   onClick={switchLoginType}
-                  size={isMobile ? "small" : "medium"}
+                  size="small"
                   sx={{ 
                     textTransform: 'none',
-                    fontSize: { xs: '0.8rem', sm: '0.875rem' }
+                    fontSize: '0.75rem',
+                    py: 0,
+                    minWidth: 0
                   }}
                 >
                   Switch to {loginType === 'driver' ? 'User' : 'Driver'} Login
                 </Button>
               </Box>
               
-              <Box sx={{ textAlign: 'center', mt: 1 }}>
-  <Typography 
-    variant={isMobile ? "caption" : "body2"} 
-    color="text.secondary"
-  >
-    Don't have an account?{' '}
-    <Link 
-      href={loginType === 'driver' ? '/driver/register' : '/user/register'} 
-      underline="hover" 
-      color={loginType === 'driver' ? 'warning.dark' : 'primary.main'} 
-      fontWeight="medium"
-    >
-      Register
-    </Link>
-  </Typography>
-</Box>
+              <Box sx={{ textAlign: 'center', mt: 0.5 }}>
+                <Typography 
+                  variant="caption" 
+                  color="text.secondary"
+                >
+                  Don't have an account?{' '}
+                  <Link 
+                    href={loginType === 'driver' ? '/' : '/'} 
+                    underline="hover" 
+                    color={loginType === 'driver' ? 'warning.dark' : 'primary.main'} 
+                    fontWeight="medium"
+                  >
+                    Register
+                  </Link>
+                </Typography>
+              </Box>
             </form>
           </CardContent>
         </Card>
       </Container>
-      <ToastContainer/>
+      <ToastContainer />
+      
+      {/* Forgot Password Modal */}
+      <ForgotPasswordModal 
+        open={forgotPasswordOpen} 
+        handleClose={handleCloseForgotPassword} 
+        loginType={loginType}
+        
+      />
     </Box>
   );
 };

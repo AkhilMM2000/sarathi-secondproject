@@ -31,7 +31,7 @@ export default function DriverRegister() {
     const nameRegex = /^[A-Za-z\s]{3,}$/;
     const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
     const mobileRegex = /^[6-9]\d{9}$/; // Ensures starts with 6-9 and 10 digits
-    const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{6,}$/;
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@#$%^&*()!]).{6,}$/;
   
   
     if (!nameRegex.test(formData.name)) {
@@ -47,7 +47,10 @@ export default function DriverRegister() {
       return false;
     }
     if (!passwordRegex.test(formData.password)) {
-      toast.error("Weak password! Min 6 chars, include letters & numbers.", { position: "top-center" });
+      toast.error(
+        "Weak password! Min 6 chars, include uppercase, lowercase, number & special character (@#$%^&*()!)",
+        { position: "top-center" }
+      );
       return false;
     }
    
@@ -135,10 +138,7 @@ export default function DriverRegister() {
         </form>
 
         <div className="mt-4 text-center">
-          <button className="w-full flex items-center justify-center gap-2 border py-3 rounded-lg hover:bg-gray-100 transition">
-            <img src="https://www.svgrepo.com/show/355037/google.svg" alt="Google" className="w-5 h-5" />
-            Sign up with Google
-          </button>
+        
         </div>
       </div>
       <ToastContainer/>

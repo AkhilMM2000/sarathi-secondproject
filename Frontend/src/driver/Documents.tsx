@@ -1,10 +1,10 @@
 import React, { useState, ChangeEvent, MouseEvent } from "react";
 import { toast, ToastContainer } from "react-toastify";
-import Api from "../services/Api";
+import Api from "../Api/ApiService";
 import { useNavigate } from "react-router-dom";
 
 const DocumentsVerify = () => {
-  const MAX_FILE_SIZE = 3 * 1024 * 1024; // 2MB
+  const MAX_FILE_SIZE = 3 * 1024 * 1024; // 3MB
 const ALLOWED_FILE_TYPES = ["image/jpeg", "image/png", "application/pdf"];
   const [aadhaarFile, setAadhaarFile] = useState<File | null>(null);
   const [aadhaarPreview, setAadhaarPreview] = useState<string | null>(null);
@@ -63,7 +63,7 @@ const ALLOWED_FILE_TYPES = ["image/jpeg", "image/png", "application/pdf"];
     const driverProfileImage = localStorage.getItem("driverProfileImage") || "";
     const driverLocation = JSON.parse(localStorage.getItem("driverLocation") || "{}");
     const driverRegisterData = JSON.parse(localStorage.getItem("driverRegisterData") || "{}");
-
+const place=localStorage.getItem('place')
     if (driverRegisterData.email) {
       localStorage.setItem("Driveremail", driverRegisterData.email);
     }
@@ -74,6 +74,7 @@ const ALLOWED_FILE_TYPES = ["image/jpeg", "image/png", "application/pdf"];
       location: driverLocation,
       aadhaarNumber,
       licenseNumber,
+      place
     };
   };
 
@@ -106,6 +107,7 @@ const ALLOWED_FILE_TYPES = ["image/jpeg", "image/png", "application/pdf"];
         Api.uploadFile(licenseFile, licenseSignedUrl.signedUrl),
       ]);
       
+     console.log(aadhaarImageUrl,licenseImageUrl);
      
     
       
@@ -127,7 +129,7 @@ const ALLOWED_FILE_TYPES = ["image/jpeg", "image/png", "application/pdf"];
         localStorage.removeItem("driverProfileImage");
         localStorage.removeItem("driverLocation");
         localStorage.removeItem("driverRegisterData");
-
+        localStorage.removeItem('place')
         // Navigate after a short delay
         setTimeout(() => {
           navigate("/otp-verification?role=drivers");

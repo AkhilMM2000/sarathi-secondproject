@@ -2,8 +2,7 @@ import { inject, injectable } from "tsyringe";
 import { IUserRepository } from "../../domain/repositories/IUserepository"; 
 import { IDriverRepository } from "../../domain/repositories/IDriverepository";
 import bcrypt from "bcryptjs";
-import jwt from "jsonwebtoken";
-import { Request, Response } from "express";
+
 import dotenv from "dotenv";
 import { User } from "../../domain/models/User";
 import { Driver } from "../../domain/models/Driver"
@@ -20,23 +19,29 @@ export class Login {
   async execute(email: string, password: string, role: "user" | "driver" | "admin") {
     let user: User | Driver | null = null;
 
-    // Search based on the role
+   
     if (role === "user" || role === "admin") {
       user = await this.userRepository.findByEmail(email);
+        if (!user) {
+        throw new AuthError(`${role} not found register as user`, 401);
+      }
     } else if (role === "driver") {
       user = await this.driverRepository.findByEmail(email);
-      if (user?.status === "pending") {
-        throw new AuthError("Your account is under review. Please wait for approval.", 403);
-      }
+      // if (user?.status === "pending") {
+      //   throw new AuthError("Your account is under review. Please wait for approval.", 403);
+      // }
   
       if (user?.status === "rejected") {
-        throw new AuthError("Your registration has been rejected. Contact support for more info.", 403);
+        throw new AuthError("Your registration has been rejected. you have to register again", 403);
       }
     }
 
     if(user?.isBlock){
       throw new AuthError("Your account has been blocked. Please contact support.", 403);
     }
+  if(user){
+    (await bcrypt.compare(password,user.password));
+  }
 
 
     if (!user || !(await bcrypt.compare(password, user.password))) {

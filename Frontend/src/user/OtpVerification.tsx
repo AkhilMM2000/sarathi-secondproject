@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { TextField, Button, Typography, Card } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import ApiService from '../services/Api'
+import ApiService from '../Api/ApiService'
 import { toast, ToastContainer } from "react-toastify";
 const OTPVerification = () => {
   const navigate = useNavigate();
@@ -65,6 +65,7 @@ const OTPVerification = () => {
     try {
       const response = await ApiService.verifyOtp(otpValue, email, role);
   console.log(response.user.role);
+ 
   
       if (response.success) {
         if (response.success) {
@@ -77,12 +78,12 @@ const OTPVerification = () => {
             navigate("/login?type=driver");
         } else {
           localStorage.removeItem("email");
-  
+  localStorage.setItem(`user_accessToken`,response.accessToken)
           toast.success("Your registration was successful!", {
             position: "top-center",
             autoClose: 2000,
           });
-          navigate("/home");
+          navigate("/userhome");
         }
       } else {
         setError("Invalid OTP. Please try again.");
@@ -106,7 +107,7 @@ const OTPVerification = () => {
   const handleResend = async () => {
   
     try {
-      await axios.post("http://localhost:5000/api/users/resend-otp", { role:"user" ,email});
+      await axios.post("http://localhost:3000/api/users/resend-otp", { role:"user" ,email});
 
       // Reset states
       setOtp(["", "", "", "", "", ""]);
@@ -157,7 +158,7 @@ const OTPVerification = () => {
         <div className="text-center mt-4">
           {showResend ? (
             <Button variant="text" color="primary" onClick={handleResend}>
-              Resend OTP
+              Resend OTPs
             </Button>
           ) : (
             <Typography variant="body2" className="text-gray-600">

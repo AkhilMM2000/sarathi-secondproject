@@ -3,8 +3,9 @@ import GoogleIcon from "@mui/icons-material/Google";
 import { useNavigate } from "react-router-dom";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import ApiService from '../services/Api'
+import ApiService from '../Api/ApiService'
 import { useState } from "react";
+import GoogleAuthButton from "../components/Googlesign";
 const RegisterUser = () => {
     const navigate=useNavigate()
     const [formData, setFormData] = useState({
@@ -145,9 +146,9 @@ const RegisterUser = () => {
           </Button>
   
           {/* Google Sign Up */}
-          <Button variant="outlined" fullWidth startIcon={<GoogleIcon />} className="mt-3 py-2">
-            Sign Up with Google
-          </Button>
+        
+       <GoogleAuthButton role="user"/>
+          
           
           {/* Divider */}
           <div className="flex items-center my-4">

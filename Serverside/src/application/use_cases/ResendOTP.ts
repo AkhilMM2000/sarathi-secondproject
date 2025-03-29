@@ -1,13 +1,17 @@
 import { injectable ,inject} from "tsyringe";
-import { UserRegistrationStore } from "../../infrastructure/store/UserRegisterStore";
+
+import { IRedisrepository } from "../../domain/repositories/IRedisrepository";
 import { EmailService } from "../services/Emailservice"; 
 
 @injectable()
 export class ResendOTP {
-  constructor(@inject("EmailService") private emailService: EmailService) {}
+  constructor(
+    @inject("EmailService") private emailService: EmailService,
+    @inject("UserRegistrationStore") private store: IRedisrepository
+) {}
   async execute(email: string, role: string) {
-    const store = UserRegistrationStore.getInstance();
-    const existingUser = store.getUser(email);
+ 
+    const existingUser =await this.store.getUser(email);
 
 
     if (!existingUser) {
@@ -19,7 +23,7 @@ export class ResendOTP {
     const otpExpires = new Date(Date.now() + 5 * 60 * 1000); // Expires in 5 min
 
     // // Update the OTP in store
-    // store.addUser({ ...existingUser, otp: newOTP, otpExpires });
+    this.store.addUser(existingUser.email,{ ...existingUser, otp: newOTP, otpExpires });
 
     // Send OTP via email
     await this.emailService.sendOTP(email, newOTP);

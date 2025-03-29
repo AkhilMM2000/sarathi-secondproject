@@ -1,6 +1,6 @@
 
-import Footer from '../pages/Footer'
-import Header from '../pages/Header'
+import Footer from '../user/Footer'
+import Header from '../user/Header'
 import { Outlet } from 'react-router-dom'
 
 const Body = () => {

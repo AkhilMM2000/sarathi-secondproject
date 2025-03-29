@@ -1,35 +1,57 @@
 import jwt from "jsonwebtoken";
 import { inject, injectable } from "tsyringe";
 import { IUserRepository } from "../../domain/repositories/IUserepository"; 
+import { IDriverRepository } from "../../domain/repositories/IDriverepository";
+import { AuthService } from "../services/AuthService";
+import { User } from "../../domain/models/User";
+import { Driver } from "../../domain/models/Driver";
+import { AuthError } from "../../domain/errors/Autherror";
 @injectable()
 
-
 export class RefreshToken {
-  constructor(@inject("IUserRepository") private userRepository: IUserRepository) {}
+  constructor(
+     @inject("IUserRepository") private userRepository: IUserRepository,
+      @inject("IDriverRepository") private driverRepository: IDriverRepository
+    
+    ) {}
 
-  async execute(refreshToken: string) {
+  async execute(refreshToken: string,role:"user"|"driver"|"admin") {
     if (!refreshToken) {
-      return { success: false, message: "No refresh token provided" };
+      throw new AuthError("No refresh token provided", 403);
     }
 
     try {
       const decoded: any = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET as string);
 
-      const user = await this.userRepository.findByEmail(decoded.email);
-      if (!user) {
-        return { success: false, message: "User not found" };
+      let user: User | Driver | null = null;
+
+      if (role === "user" || role === "admin") {
+        user = await this.userRepository.findByEmail(decoded.email);
+
+        if (!user) {
+          throw new AuthError("User not found", 404);
+        }
+
+        if (role === "admin" && user.role !== "admin") {
+          throw new AuthError("Not authorized as admin", 403);
+        }
+      } else if (role === "driver") {
+        user = await this.driverRepository.findByEmail(decoded.email);
+
+        if (!user) {
+          throw new AuthError("Driver not found", 404);
+        }
       }
 
-      // Generate new access token
-      const newAccessToken = jwt.sign(
-        { id: user._id, role: user.role },
-        process.env.ACCESS_TOKEN_SECRET as string,
-        { expiresIn: "15m" }
-      );
+      if (!user) {
+        throw new AuthError("User not found", 404);
+      }
 
-      return { success: true, accessToken: newAccessToken };
+      const accessToken = AuthService.generateAccessToken({ id: user._id, email: user.email, role });
+
+      return { success: true, accessToken };
     } catch (error) {
-      return { success: false, message: "Invalid refresh token" };
+      throw new AuthError("Invalid refresh token", 403);
     }
   }
 }

@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { TextField, Button, Typography, Card } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import ApiService from "../services/Api";
+import ApiService from "../Api/ApiService";
 import { toast, ToastContainer } from "react-toastify";
 
 const DriverOTPVerification = () => {

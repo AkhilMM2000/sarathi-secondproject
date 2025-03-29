@@ -14,6 +14,7 @@ const DriverSchema = new Schema<IDriver>(
       latitude: { type: Number, required: true },
       longitude: { type: Number, required: true },
     },
+    place:{type:String},
     aadhaarNumber: { type: String, required: true, unique: true },
     licenseNumber: { type: String, required: true, unique: true },
     aadhaarImage: { type: String, required: true },
@@ -25,11 +26,13 @@ const DriverSchema = new Schema<IDriver>(
     },
     isBlock: { type: Boolean, default: false },
     role: { type: String, required: true, default: "driver" }, 
+    reason: { type: String, default: null },
     createdAt: { type: Date, default: Date.now },
   },
 
   { timestamps: true }
 );
+
 DriverSchema.pre("save", async function (next) {
   if (!this.isModified("password")) return next();
 

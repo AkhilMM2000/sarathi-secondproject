@@ -2,7 +2,8 @@ import { inject, injectable } from "tsyringe";
 import jwt from "jsonwebtoken";
 import { IUserRepository } from "../../domain/repositories/IUserepository";
 import { IDriverRepository } from "../../domain/repositories/IDriverepository";
-import { UserRegistrationStore } from "../../infrastructure/store/UserRegisterStore";
+
+import { IRedisrepository } from "../../domain/repositories/IRedisrepository";
 import { User } from "../../domain/models/User";
 import { Request, Response } from "express";
 import dotenv from "dotenv";
@@ -13,20 +14,21 @@ dotenv.config();
 export class VerifyOTP {
   constructor(
     @inject("IUserRepository") private userRepository: IUserRepository,
-    @inject("IDriverRepository") private driverRepository: IDriverRepository
+    @inject("IDriverRepository") private driverRepository: IDriverRepository,
+      @inject("UserRegistrationStore") private store: IRedisrepository
   ) {}
 
   async execute(req: Request, res: Response, email: string, otp: string, role: "user" | "driver") {
-    const store = UserRegistrationStore.getInstance();
-    const userData = store.getUser(email);
+    console.log('sdssdf');
+    const userData = await this.store.getUser(email);
 
-    console.log("✅ Reached OTP verification");
-    console.log("📌 Retrieved user data:", userData, `Role: ${role}`);
+
+console.log('verify otp data');
 
     if (!userData) throw new Error("Register again, data not found");
     if (userData.otp !== otp || userData.otpExpires < new Date()) throw new Error("Invalid or expired OTP");
 
-    console.log("✅ OTP Verified!");
+   
 
     // Choose repository based on role
     const repository = role === "user" ? this.userRepository : this.driverRepository;
@@ -62,8 +64,7 @@ export class VerifyOTP {
       savedUser = await repository.create(userData);
     }
 
-    // Remove from temporary store after successful save
-    store.removeUser(email);
+  
 
     if (!savedUser) console.log('user data doesnt get to you');
     
@@ -82,7 +83,7 @@ export class VerifyOTP {
       { expiresIn: "7d" }
     );
 
-    res.cookie("refreshToken", refreshToken, {
+    res.cookie(`${role}RefreshToken`, refreshToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       maxAge: 7 * 24 * 60 * 60 * 1000,

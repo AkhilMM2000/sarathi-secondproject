@@ -31,9 +31,13 @@ const ProfileLocation = () => {
       }
       const lat = place.geometry.location.lat();
       const lng = place.geometry.location.lng();
+      const placeName = place.name || place.formatted_address || "Unknown Place"; 
       setLocation({ lat: lat, lng: lng });
       setAddress(place.formatted_address || "");
+     
+      
       localStorage.setItem("driverLocation", JSON.stringify({ latitude: lat, longitude: lng }));
+      localStorage.setItem('place',placeName)
     });
   }, []);
 

@@ -65,16 +65,16 @@ class ApiService {
      
       const formData = new FormData();
       formData.append("file", file);
-      formData.append("api_key", signedData.api_key);
+      formData.append("api_key",import.meta.env.VITE_CLOUDINARY_API_KEY);
       formData.append("timestamp", signedData.timestamp.toString());
       formData.append("signature", signedData.signature);
       formData.append("public_id", signedData.public_id);
       formData.append("folder", signedData.folder); // Optional but recommended
-
+      // formData.append("transformation","c_fill,w_600,h_600");
 
   
       const response = await axios.post(
-        `https://api.cloudinary.com/v1_1/${signedData.cloud_name}/image/upload`,
+        `https://api.cloudinary.com/v1_1/${import.meta.env.VITE_CLOUDINARY_CLOUD_NAME}/image/upload`,
         formData
       );
   
@@ -90,12 +90,13 @@ class ApiService {
     }
   }
 
-  async Login(formData: Record<string, any>, type: "users" | "drivers") {
+  async Login(formData: Record<string, any>, type: "users" | "drivers"|"admin") {
     try {
-      const payload = { ...formData, role: type === "drivers" ? "driver" : "user" }; // Add role dynamically
+      const payload = { ...formData,    role: type === "drivers" ? "driver" : type === "admin" ? "admin" : "user"  }; // Add role dynamically
 
       const response = await axios.post(`${this.baseUrl}/${type}/login`, payload, {
-        headers: { "Content-Type": "application/json" },
+        withCredentials:true,
+      
       });
       return response.data;
     } catch (error: any) {
@@ -103,6 +104,29 @@ class ApiService {
     }
   }
   
+  handleLogout = async (role: "driver" | "user" | "admin") => {
+    try {
+        const response = await axios.post(`${this.baseUrl}/auth/logout`, {}, { 
+          params: { role }, 
+          withCredentials: true 
+      });
+      
+     
+        localStorage.removeItem(`${role}_accessToken`);
+
+        return response.data.message; // Return the success message from the backend
+    } catch (error:unknown) {
+        console.error("Logout failed:", error);
+        if (axios.isAxiosError(error)) {
+          throw new Error(error.response?.data?.message || "Logout failed");
+      }
+      throw new Error("An unknown error occurred");
+    }
+
+ }
+
 }
 
-export default new ApiService(); // Export instance of the class
+export default new ApiService(); 
+
+

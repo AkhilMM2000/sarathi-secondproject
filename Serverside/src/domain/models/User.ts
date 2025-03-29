@@ -5,7 +5,14 @@ export interface User {
   name: string;
   email: string;
   mobile: string;
+  profile:string;
+  location?: {
+    latitude: number;
+    longitude: number;
+  };
+  place?:string;
   password: string;
+  googleId?: string;
   referralCode?: string;
   role: "user" | "admin"; 
   isBlock:Boolean;
