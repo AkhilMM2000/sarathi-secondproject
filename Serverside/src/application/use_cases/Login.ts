@@ -8,13 +8,14 @@ import { User } from "../../domain/models/User";
 import { Driver } from "../../domain/models/Driver"
 import { AuthService } from "../services/AuthService";
 import { AuthError } from "../../domain/errors/Autherror"; 
+import { HashService } from "../services/HashService";
 dotenv.config();
 @injectable()
 export class Login {
   constructor(
     @inject("IUserRepository") private userRepository: IUserRepository,
-    @inject("IDriverRepository") private driverRepository: IDriverRepository
-
+    @inject("IDriverRepository") private driverRepository: IDriverRepository,
+ @inject("HashService") private hashService: HashService
   ) {}
   async execute(email: string, password: string, role: "user" | "driver" | "admin") {
     let user: User | Driver | null = null;
@@ -32,13 +33,16 @@ export class Login {
       // }
   
       if (user?.status === "rejected") {
-        throw new AuthError("Your registration has been rejected. you have to register again", 403);
+        throw new AuthError("Your registration has been rejected. just clear your verification ", 403);
       }
     }
 
     if(user?.isBlock){
       throw new AuthError("Your account has been blocked. Please contact support.", 403);
     }
+    const status= await this.hashService.compare(password,user?.password||'')
+    console.log(status);
+    
   if(user){
     (await bcrypt.compare(password,user.password));
   }

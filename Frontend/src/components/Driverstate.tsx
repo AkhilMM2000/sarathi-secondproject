@@ -1,7 +1,12 @@
 import React from 'react';
 import { Alert, Typography } from '@mui/material';
 
-const DriverStateNotification = ({ driverState:'',reason:string }) => {
+interface DriverStateNotificationProps {
+  driverState: string;
+  reason?: string;
+}
+
+const DriverStateNotification: React.FC<DriverStateNotificationProps> = ({ driverState, reason }) => {
   // Check if driver state is 'rejected'
   if (driverState === 'rejected') {
     return (

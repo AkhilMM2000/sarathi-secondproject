@@ -16,13 +16,15 @@ export const protectRoute = (
 ) => {
   return (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     const authHeader = req.headers.authorization;
-    
+ 
+   
    
     if (!authHeader || !authHeader.startsWith('Bearer')) {
       res.status(401).json({ message: 'No token provided' });
       return  
     }
    
+
     const token = authHeader.split(' ')[1];
 
 
@@ -34,7 +36,8 @@ export const protectRoute = (
         process.env.ACCESS_TOKEN_SECRET as string
       ) as { id: string; email: string; role: 'user' | 'driver' | 'admin' };
 
-      console.log(decoded);
+      
+      
       
       req.user = decoded;
 
@@ -44,13 +47,13 @@ export const protectRoute = (
       }
 
       next();
-    } catch (err) {
+    } catch (err:any) {
      
       
-      
+  
       res.status(401).json({ message: 'Invalid or expired token' });
       return;
  
-    }
+    } 
   };
 };

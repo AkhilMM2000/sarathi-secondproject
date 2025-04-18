@@ -18,7 +18,9 @@ export interface Driver {
     licenseImage: string;
     status: "pending" | "approved" | "rejected";
     isBlock: boolean; 
-    role:"driver",
+    role:"driver";
+    activePayment?: boolean;
+    stripeAccountId?: string;
     reason?: string; 
     createdAt?: Date;
   }

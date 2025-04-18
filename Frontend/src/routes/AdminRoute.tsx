@@ -3,6 +3,7 @@ import SarathiAdminLogin from "../Admin/AdminLogin";
 import AdminSidebar from "../Admin/AdminLayout";
 import UserManagement from "../Admin/Usermanage";
 import DriverManagement from "../Admin/Drivermanage";
+import Ridelist from "../Admin/Ridelist";
 
 const AdminRoute = () => {
   return (
@@ -17,6 +18,7 @@ const AdminRoute = () => {
           <Route path="dashboard" element={< Dashboards  />} /> */}
           {<Route path="users" element={< UserManagement  />} /> }
           {<Route path="drivers" element={< DriverManagement/>} /> }
+          {<Route path="Rides" element={< Ridelist/>} /> }
         </Route>
       </Routes>
     

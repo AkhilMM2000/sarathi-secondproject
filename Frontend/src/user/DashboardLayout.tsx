@@ -37,7 +37,7 @@ const menuItems = [
   { text: "Dashboard", icon: <DashboardIcon />, path: "/userhome/dashboard" },
   { text: "Vehicle Info", icon: <DirectionsCarIcon />, path: "/userhome/vehicle" },
   { text: "Current Rides", icon: <CommuteIcon />, path: "/userhome/rides" },
-  { text: "Ride History", icon: <HistoryIcon />, path: "/userhome/history" },
+  { text: "Ride History", icon: <HistoryIcon />, path: "/home" },
 ];
 
 const UserDashlayout= () => {

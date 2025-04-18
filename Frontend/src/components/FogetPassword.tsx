@@ -25,6 +25,7 @@ interface ForgotPasswordModalProps {
   handleClose: () => void;
   loginType: UserRole;
 }
+
 const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({ open, handleClose, loginType }) => {
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);

@@ -13,6 +13,10 @@ import { GetAllVehicle } from "../../application/use_cases/GetAllVehicle";
 import { GetUserData } from "../../application/use_cases/User/GetUserData";
 import { UpdateUserData } from "../../application/use_cases/User/UpdateUserData";
 import { GetVehiclesByUser } from "../../application/use_cases/Admin/GetVehiclesByUser";
+import { FindNearbyDrivers } from "../../application/use_cases/User/FindNearbyDrivers";
+import { BookDriver } from "../../application/use_cases/User/BookDriver";
+import { CreatePaymentIntent } from "../../application/use_cases/User/CreatePaymentIntent";
+
 
 export class UserController {
   static async register(req: Request, res: Response) {
@@ -220,7 +224,60 @@ console.log(updateData);
     }
 
   }
+  
+  static async fetchDrivers(req: AuthenticatedRequest, res: Response) {
+    try {
+      const userId= req.user?.id;
 
+      if (!userId) {
+       res.status(400).json({ message: "User ID is required" });
+       return 
+      }
 
+      // Resolve the use case
+      const findNearbyDrivers = container.resolve(FindNearbyDrivers);
 
+      // Execute the use case and fetch drivers
+      const drivers = await findNearbyDrivers.execute(userId);
+
+     res.status(200).json({ success: true, drivers });
+    } catch (error) {
+      if (error instanceof AuthError) {
+        res.status(error.statusCode).json({ success: false, error: error.message });
+        return
+      }
+
+      console.error("Error fetching user data:", error);
+      res.status(500).json({ success: false, error: "Internal server error" });
+    }
+  }
+  
+  static async createPaymentIntent(req: Request, res: Response) {
+    const { amount,driverId  } = req.body;
+console.log(req.body)
+    if (!amount || !driverId) {
+      res.status(400).json({ message: 'Missing required fields' });
+      return
+    }
+
+    try {
+      const createPaymentIntent = container.resolve(CreatePaymentIntent);
+
+      const result = await createPaymentIntent.execute({
+        amount,
+       driverId
+      });
+
+      res.json({ clientSecret: result.clientSecret, paymentIntentId: result.paymentIntentId,  });
+    } catch (error: any) {
+      if (error instanceof AuthError) {
+        res.status(error.statusCode).json({ success: false, error: error.message });
+        return
+      }
+
+      console.error("Error fetching user data:", error);
+      res.status(500).json({ success: false, error: "Internal server error" });
+    }
+  }
+  
 }

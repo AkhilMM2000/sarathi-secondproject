@@ -1,7 +1,9 @@
 import React from "react";
 import { Box, Container, Grid, Typography, Paper, Button } from "@mui/material";
+import { useNavigate } from "react-router-dom";
 
 const Home = () => {
+  const navigate=useNavigate()
   return (
     <Box sx={{ mt: 1 }}> {/* Margin-top to avoid overlap with Navbar */}
       
@@ -57,7 +59,7 @@ const Home = () => {
   
       {/* Show Drivers Button */}
       <Box textAlign="center" sx={{ mt: 4 }}>
-        <Button variant="contained" color="primary" size="large">
+        <Button variant="contained" color="primary" size="large" onClick={()=>navigate('/drivers')}>
           Show Drivers
         </Button>
       </Box>

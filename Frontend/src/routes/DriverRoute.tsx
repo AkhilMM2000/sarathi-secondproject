@@ -5,23 +5,26 @@ import ProfileLocation from "../driver/Location";
 import DriverOTPVerification from "../driver/VerifyOTP";
 import DocumentsVerify from "../driver/Documents";
 import DriverDashboard from "../driver/Dashboard";
+import DriverOnboardingComplete from "../driver/Onboarding";
+import RidesDriver from "../driver/Rides";
 
 
 const DriverRoute = () => {
   return (
 
       <Routes>
-        <Route path="/driver" element={<DriverRegister/>}/>
+        <Route path="/driverReg" element={<DriverRegister/>}/>
         <Route path="/driver-location" element={<ProfileLocation/>}/>
         <Route path="/driver-otpverification" element={<DriverOTPVerification/>}/>
        
         <Route path="/verify-documents" element={<DocumentsVerify/>}/>
 
 
-     <Route path="/driverHome" element={<DriverSidebar/>}>
+     <Route path="/driver" element={<DriverSidebar/>}>
      <Route index element={<DriverDashboard/>} />
-     <Route path="users" element=''/>
-
+     <Route path="onboard-success" element={<DriverOnboardingComplete />}/>
+     <Route path="onboard-failure'" element={<DriverOnboardingComplete />}/>
+      <Route path="rides" element={<RidesDriver/>} />
     </Route>
 
       </Routes>

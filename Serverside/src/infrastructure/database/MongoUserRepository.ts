@@ -19,7 +19,7 @@ export class MongoUserRepository implements IUserRepository {
   }
   async updateUser(userId: string, data: Partial<User>): Promise<User | null> {
     if (!isValidObjectId(userId)) throw new Error("Invalid user ID");
-  
+     
     const user = await UserModel.findById(userId);
     if (!user) return null;
   
@@ -29,7 +29,7 @@ export class MongoUserRepository implements IUserRepository {
   
     return user.toObject() as User;
   }
-  
+    
   async findByEmail(email: string): Promise<User | null> {
     try {
       return await UserModel.findOne({ email });

@@ -35,8 +35,8 @@ import { clearDriver, setDriver } from '../store/slices/DriverStore';
 import { handleDriverData } from '../Api/driverService';
 import ApiService from '../Api/ApiService';
 const menuItems = [
-  { text: "Dashboard", icon: <DashboardIcon />, path: "/driverHome" },
-  { text: "Active Rides", icon: <RouteIcon />, path: "/driver/rides" },
+  { text: "Dashboard", icon: <DashboardIcon />, path: "/driver" },
+  { text: "Ride Management", icon: <RouteIcon />, path: "/driver/rides" },
   { text: "Trip History", icon: <HistoryIcon />, path: "/driver/history" },
  
 ];

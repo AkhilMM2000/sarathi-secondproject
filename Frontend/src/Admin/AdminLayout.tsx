@@ -19,6 +19,8 @@ import {
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import PeopleIcon from "@mui/icons-material/People";
 import DirectionsCarIcon from "@mui/icons-material/DirectionsCar";
+import TravelExploreIcon from '@mui/icons-material/TravelExplore'; 
+
 import LogoutIcon from "@mui/icons-material/Logout";
 import AdminPanelSettingsIcon from "@mui/icons-material/AdminPanelSettings";
 import MenuIcon from "@mui/icons-material/Menu";
@@ -31,6 +33,7 @@ const menuItems = [
   { text: "Dashboard", icon: <DashboardIcon />, path: "/adminhome" },
   { text: "User Management", icon: <PeopleIcon />, path: "/adminhome/users" },
   { text: "Driver Management", icon: <DirectionsCarIcon />, path: "/adminhome/drivers" },
+  { text: "Ridelist", icon: <TravelExploreIcon/>, path: "/adminhome/Rides" },
 ];
 
 const AdminSidebar = () => {

@@ -3,6 +3,7 @@ import { IDriverRepository } from "../../domain/repositories/IDriverepository";
 import { Driver } from "../../domain/models/Driver";
 import DriverModel from "./modals/Driverschema"; // MongoDB Schema
 import { isValidObjectId } from "mongoose";
+import { AuthError } from "../../domain/errors/Autherror";
 
 @injectable()
 export class MongoDriverRepository implements IDriverRepository {
@@ -67,5 +68,25 @@ export class MongoDriverRepository implements IDriverRepository {
   async getDrivers(): Promise<Driver[]> {
     return await DriverModel.find(); 
   }
+async findAllActiveDrivers(): Promise<Driver[]> {
+  return (await DriverModel.find({ status: "approved" }).lean()) as unknown as Driver[];
+}
 
+async updateStripeAccount(driverId: string, stripeAccountId: string): Promise<Driver> {
+  try {
+    const driver = await DriverModel.findById(driverId);
+
+    if (!driver) {
+      throw new AuthError('Driver not found', 404);
+    }
+
+    driver.stripeAccountId = stripeAccountId;
+    await driver.save();
+
+    return { ...driver.toObject(), _id: driver._id } as Driver;
+  } catch (error: any) {
+    console.error('Failed to update Stripe account for driver:', error);
+    throw new AuthError('Failed to update Stripe account', 500);
+  }
+}
 }

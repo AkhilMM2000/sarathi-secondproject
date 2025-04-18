@@ -28,6 +28,8 @@ const DriverSchema = new Schema<IDriver>(
     role: { type: String, required: true, default: "driver" }, 
     reason: { type: String, default: null },
     createdAt: { type: Date, default: Date.now },
+    stripeAccountId: { type: String, default: null },
+    activePayment: { type: Boolean, default: false },
   },
 
   { timestamps: true }

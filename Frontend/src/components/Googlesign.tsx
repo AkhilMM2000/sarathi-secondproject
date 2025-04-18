@@ -36,7 +36,7 @@ console.log(role);
       if (role === "user") {
         navigate("/userhome");
       } else if (role === "driver") {
-        navigate("/driverHome");
+        navigate("/driver");
       } else {
         navigate("/"); // Default fallback
       }

@@ -70,3 +70,15 @@ export const DriverStatusHandle = async (
     throw error;
   }
 };
+
+export const GetDriverswithDistance=async(  role: UserRole)=>{
+      try {
+        const apiInstance = getApiInstance(role);
+        const response = await apiInstance.get(`/nearby`);
+
+        return response.data;
+      } catch (error) {
+        throw error
+      }
+
+}

@@ -1,6 +1,7 @@
 import express from "express";
 import { AdminController } from "../controllers/AdminController";
 import { protectRoute } from "../../middleware/authMiddleware";
+import { BookingController } from "../controllers/BookingController";
 
 const router = express.Router();
 
@@ -34,6 +35,7 @@ router
   .route("/vehicles/:userId")
   .get(protectRoute(["admin"]), AdminController.getVehiclesByUser);
 
+  router.get("/bookings", BookingController.getAllBookings);
 export default router;
 
 

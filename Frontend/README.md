@@ -53,3 +53,37 @@ Project related things
 -------------------------------------------------------------------
 User Register ,
 User Login
+
+
+
+
+const stripe = require('stripe')('sk_test_...'); // your secret test key
+
+app.post('/api/driver/onboard', async (req, res) => {
+  try {
+    const account = await stripe.accounts.create({
+      type: 'express',
+      country: 'US', // for test mode — no issue
+      email: req.body.email,
+      capabilities: {
+        card_payments: { requested: true },
+        transfers: { requested: true },
+      },
+    });
+
+    const accountLink = await stripe.accountLinks.create({
+      account: account.id,
+      refresh_url: 'https://yourdomain.com/reauth',
+      return_url: 'https://yourdomain.com/success',
+      type: 'account_onboarding',
+    });
+
+    // Save account.id to DB → linked to driver
+    res.json({ url: accountLink.url });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Stripe onboarding failed');
+  }
+});
+what is this after this what to do with geting res.json({ url: accountLink.url }); in reponse
+i wnat refresh and return url thats all

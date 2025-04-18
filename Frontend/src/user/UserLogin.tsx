@@ -98,7 +98,7 @@ const DualLogin= () => {
   
         // Redirect based on role
         if (response.role === "driver") {
-          navigate("/driverHome", { replace: true });
+          navigate("/driver", { replace: true });
         } else {
           navigate("/userhome",{ replace: true });
         }

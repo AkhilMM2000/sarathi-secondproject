@@ -3,6 +3,8 @@ import { UserController } from "../controllers/UserController";
 import { protectRoute } from "../../middleware/authMiddleware"; 
 import { CheckBlockedUserOrDriver } from "../../middleware/checkBlocked";
 import { container } from "tsyringe";
+import { AuthController } from "../controllers/AuthController";
+import { BookingController } from "../controllers/BookingController";
 
 const router= express.Router();
 const checkBlockedMiddleware = container.resolve(CheckBlockedUserOrDriver);
@@ -36,4 +38,18 @@ router
   .route("/profile/:id")
   .all(protectRoute(["user"]), checkBlockedMiddleware.handle.bind(checkBlockedMiddleware))
   .patch(UserController.updateUser);
+
+
+router.get("/nearby",protectRoute(['user']),checkBlockedMiddleware.handle.bind(checkBlockedMiddleware),UserController.fetchDrivers);
+
+router.patch('/auth/change-password',protectRoute(['user']),checkBlockedMiddleware.handle.bind(checkBlockedMiddleware),AuthController.ChangePassword)
+
+//Booking Routes
+router.post("/bookslot",protectRoute(["user"]), checkBlockedMiddleware.handle.bind(checkBlockedMiddleware),BookingController.bookDriver);
+router.post("/estimate-fare",protectRoute(["user"]), checkBlockedMiddleware.handle.bind(checkBlockedMiddleware), BookingController.getEstimatedFare);
+router.get("/bookslot", protectRoute(["user"]), checkBlockedMiddleware.handle.bind(checkBlockedMiddleware), BookingController.getUserBookings);
+router.patch("/update-booking/:rideId", protectRoute(["user"]), checkBlockedMiddleware.handle.bind(checkBlockedMiddleware), BookingController.attachPaymentIntent);
+
+router.post("/create-payment-intent", protectRoute(["user"]), checkBlockedMiddleware.handle.bind(checkBlockedMiddleware), UserController.createPaymentIntent);
+router.patch("/cancel-booking",protectRoute(['user']),checkBlockedMiddleware.handle.bind(checkBlockedMiddleware) ,BookingController.cancelBooking);
 export default router;

@@ -1,26 +1,23 @@
 import React from "react";
-import ReactPaginate from "react-paginate";
+import { Pagination, Stack } from "@mui/material";
 
+type PaginationProps = {
+  totalPages: number;
+  currentPage: number;
+  onPageChange: (page: number) => void;
+};
 
-interface PaginationProps {
-  pageCount: number;
-  onPageChange: (selected: number) => void;
-}
-
-const Pagination: React.FC<PaginationProps> = ({ pageCount, onPageChange }) => {
+const CustomPagination: React.FC<PaginationProps> = ({ totalPages, currentPage, onPageChange }) => {
   return (
-    <ReactPaginate
-      previousLabel={"←"}
-      nextLabel={"→"}
-      breakLabel={"..."}
-      pageCount={pageCount}
-      marginPagesDisplayed={2}
-      pageRangeDisplayed={3}
-      onPageChange={(event) => onPageChange(event.selected)}
-      containerClassName={"pagination"}
-      activeClassName={"active"}
-    />
+    <Stack spacing={2} alignItems="center" sx={{ mt: 4 }}>
+      <Pagination
+        count={totalPages}
+        page={currentPage}
+        onChange={(_, page) => onPageChange(page)}
+        color="primary"
+      />
+    </Stack>
   );
 };
 
-export default Pagination;
+export default CustomPagination;

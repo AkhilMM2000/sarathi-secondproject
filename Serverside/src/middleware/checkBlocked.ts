@@ -49,9 +49,10 @@ export class CheckBlockedUserOrDriver {
       }
 
       if (userOrDriver.isBlock) {
-        res.status(403).json({ message: "Your account is blocked. Contact support." });
-        return 
+        res.status(403).json({ blocked: true, message: "Your account is blocked. Contact support." });
+        return;
       }
+      
  next(); 
     } catch (error) {
       console.error("Error checking blocked user/driver:", error);

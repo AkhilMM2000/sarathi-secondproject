@@ -1,4 +1,4 @@
-import React, { ChangeEvent, useEffect, useRef, useState } from "react";
+import React, { ChangeEvent, MouseEvent, useEffect, useRef, useState } from "react";
 import {
   Card,
   CardContent,
@@ -8,8 +8,14 @@ import {
   Box,
   TextField,
   Button,
+  Alert,
+  Chip,
+  useTheme,
+  useMediaQuery,
+  Divider,
 } from "@mui/material";
 import "react-toastify/dist/ReactToastify.css";
+import LocationOnIcon from '@mui/icons-material/LocationOn';
 
 import LocationPicker from "../components/LocationPicker";
 import { AppDispatch, RootState } from "../store/ReduxStore";
@@ -21,14 +27,25 @@ import { ToastContainer,toast } from 'react-toastify';
 import ApiService from "../Api/ApiService";
 import useDriverAuth from "../hooks/useAuth";
 import RejectionNotification from "../components/Driverstatus";
+import ChangePassword from "../components/ChangePassword";
+import { DriverAPI } from "../Api/AxiosInterceptor";
+import { useNavigate } from "react-router-dom";
 
+import EditIcon from '@mui/icons-material/Edit';
+import SaveIcon from '@mui/icons-material/Save';
+import PaymentIcon from '@mui/icons-material/Payment';
+import VerifiedIcon from '@mui/icons-material/CreditScore'
+import AccountCircleIcon from '@mui/icons-material/AccountCircle';
+import EnhancedAlerts from "../components/Alert";
 const DriverDashboard: React.FC = () => {
-  
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const MAX_FILE_SIZE = 7* 1024 * 1024; 
   const ALLOWED_FILE_TYPES = ["image/jpeg", "image/png", "application/pdf"];
-
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [editingSection, setEditingSection] = useState<string | null>(null);
-
+ const [refresh, setRefresh] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState<{
     lat: number;
     lng: number;
@@ -38,7 +55,7 @@ const DriverDashboard: React.FC = () => {
   const driverState = useSelector(
     (state: RootState) => state.driverStore.driver
   );
-
+ const [success,setSuccess]=useState(false)
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const [editedName, setEditedName] = useState(driverState?.name||'');
    const [profileImage, setProfileimage] = useState<File | null>(null);
@@ -53,7 +70,7 @@ const [licenseImage, setLicenseImage] = useState<File | null>(null);
 const [licensePreview, setLicensePreview] = useState<string | null>(null);
 const [editedLicenseNumber, setEditedLicenseNumber] = useState(driverState?.licenseNumber || "");
 
-
+const naviagte=useNavigate()
 
    const [isUpdating, setIsUpdating] = useState(false);
 
@@ -124,7 +141,7 @@ const handleFileChange = (
     };
 
     fetchDriver();
-  }, [dispatch]);
+  }, [dispatch,refresh]);
 
   // Handle Input Change
  
@@ -346,116 +363,415 @@ const handleFileChange = (
   }) => {
     setSelectedLocation(location);
   };
- 
-  
+
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleSubmit = async (e:MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
+
+    try {
+      // Make a POST request to your backend to create a Stripe account
+      const response = await DriverAPI.post('/onboard', { driverId: driverState?._id,
+        email: driverState?.email    });
+        window.location.href = response.data.url;
+    } catch (err) {
+      setLoading(false);
+      setError('Something went wrong. Please try again later.');
+      console.error(err);
+    }
+  };
+const VerifyPayment=async(e:MouseEvent<HTMLButtonElement>)=>{
+  try {
+    await DriverAPI.post('/verify-account', { driverId: driverState?._id });
+    setRefresh(prev => !prev);
+        setSuccess(true) // trigger re-fetch of bookings
+  } catch (error:any) {
+    console.log(error)
+    setRefresh(prev => !prev);
+     setError(error?.response?.data?.error ||  "Failed to verify payment");
+  }
+
+
+}
 
   return (
     <Box sx={{ width: "100%", maxWidth: "800px", mx: "auto", p: 3 }}>
-     
+        <EnhancedAlerts
+         success={success}
+         error={error?error:''}
+        setSuccess={setSuccess}
+        setError={setError}
+         successMessage="payment activation success"
+         
+         autoHideDuration={4000}
+      />
      <RejectionNotification driverState={driverState} />
-     {/* Profile Section */}
-<Card sx={{ mb: 3, p: 2, textAlign: "center" }}>
-  <CardContent>
-    <Typography variant="subtitle1" color="textSecondary">
-      Profile
-    </Typography>
-
-    {editingSection === "profile" ? (
-      <div className="flex flex-col items-center mt-2">
-        {/* Profile Image Preview & Upload */}
-        <Avatar
-          src={previewImage || `${import.meta.env.VITE_IMAGEURL}/${driverState?.profileImage}`}
-          sx={{ width: 200, height: 200, mb: 2 }}
-          onClick={() => fileInputRef.current?.click()} 
-        />
-        <input
-         type="file"
-         ref={fileInputRef}  
-         style={{ display: "none" }}
-         id="vehicle-upload"
-         accept="image/jpeg, image/png, application/pdf"
-         onChange={(e) => handleFileChange(e, setProfileimage, setPreviewImage, "user")} 
-        />
-
-        {/* Name Input */}
-        <TextField
-          label="Full Name"
-          variant="outlined"
-        
-          value={editedName}
-          onChange={(e) => setEditedName(e.target.value)}
-          fullWidth
-        />
-      </div>
-    ) : (
-      <>
-        <Avatar
-          src={`${import.meta.env.VITE_IMAGEURL}/${driverState?.profileImage}`|| "/default-avatar.png"}
-          sx={{ width: 100, height: 100, mx: "auto", mb: 2 }}
-        />
-        <Typography variant="h6">{driverState?.name}</Typography>
-      </>
-    )}
-  </CardContent>
-
-  {editingSection === "profile" ? (
-    <Button
-      variant="contained"
-      color="primary"
-      sx={{ m: 2 }}
-      onClick={() => handleUpdate("profile")}
-      disabled={isUpdating} 
+     <Card 
+       elevation={4} 
+       sx={{ 
+         mb: 3, 
+         borderRadius: 2,
+         overflow: 'hidden',
+         transition: 'all 0.3s ease',
+         '&:hover': {
+           boxShadow: '0 8px 24px rgba(0,0,0,0.12)'
+         },
+         maxWidth: isMobile ? '100%' : '700px', // Increase from 500px to 700px
+         margin: '0 auto'
+       }}
     >
-      Save
-    </Button>
-  ) : (
-    <Button
-      variant="outlined"
-      color="secondary"
-      sx={{ m: 2 }}
-      onClick={() => setEditingSection("profile")}
-    >
-     {isUpdating ? "Updating..." : "Edit"}
-    </Button>
-  )}
-</Card>
+      {/* Profile Card Header */}
+      <Box sx={{ 
+        p: 2, 
+        background: 'linear-gradient(45deg, #2196F3 30%, #21CBF3 90%)',
+        color: 'white',
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center'
+      }}>
+        <Typography variant="h5" fontWeight="bold">
+          <AccountCircleIcon sx={{ mr: 1, verticalAlign: 'middle' }} />
+          Driver Profile
+        </Typography>
+        <Button 
+          variant="contained" 
+          color="secondary" 
+          size="small"
+          onClick={() => setIsModalOpen(true)}
+          sx={{ 
+            borderRadius: 4,
+            textTransform: 'none',
+            fontWeight: 'bold'
+          }}
+        >
+          Change Password
+        </Button>
+      </Box>
+
+      {/* Important Alert Message */}
+      <Alert 
+        severity="info" 
+        sx={{ 
+          borderRadius: 0,
+          fontWeight: 'medium'
+        }}
+      >
+        <Box display="flex" alignItems="center" justifyContent="space-between" width="100%">
+        {!driverState?.stripeAccountId && (
+  <Typography
+    variant="body2"
+    color="text.secondary"
+    sx={{ mt: 1, fontStyle: 'italic' }}
+  >
+    Complete your onboarding to start receiving payments
+  </Typography>
+)}
+         {driverState?.activePayment?
+           <Alert 
+           severity="success" 
+           icon={<VerifiedIcon />} 
+           sx={{ mt: 2, fontWeight: 'bold' }}
+         >
+           Your payment is active
+         </Alert>:driverState?.stripeAccountId ? (
+         
+         
+         <Button   variant="contained" 
+            color="secondary" 
+            size="small" 
+            startIcon={<VerifiedIcon/>}
+            onClick={VerifyPayment}
+            sx={{ 
+              borderRadius: 4,
+              textTransform: 'none',
+              fontWeight: 'bold',
+              ml: 2
+            }}>Verify Payment</Button>):(<Button 
+           type="submit"
+           onClick={handleSubmit}
+           disabled={loading}
+            variant="contained" 
+            color="primary" 
+            size="small" 
+            startIcon={<PaymentIcon />}
+            sx={{ 
+              borderRadius: 4,
+              textTransform: 'none',
+              fontWeight: 'bold',
+              ml: 2
+            }}
+          >
+            Set Up Payment
+          </Button>)}
+        </Box>
+      </Alert>
+
+      <CardContent sx={{ p: 3 }}>
+        {editingSection === "profile" ? (
+          <Box className="flex flex-col items-center mt-2">
+            {/* Profile Image Preview & Upload */}
+            <Box 
+              sx={{ 
+                position: 'relative', 
+                mb: 3, 
+                cursor: 'pointer',
+                '&:hover .overlay': {
+                  opacity: 1
+                }
+              }}
+              onClick={() => fileInputRef.current?.click()}
+            >
+              <Avatar
+                src={previewImage || `${import.meta.env.VITE_IMAGEURL}/${driverState?.profileImage}`}
+                sx={{ 
+                  width: 150, 
+                  height: 150, 
+                  border: '4px solid white',
+                  boxShadow: '0 4px 10px rgba(0,0,0,0.15)'
+                }}
+              />
+              <Box 
+                className="overlay"
+                sx={{ 
+                  position: 'absolute', 
+                  top: 0, 
+                  left: 0, 
+                  right: 0, 
+                  bottom: 0, 
+                  backgroundColor: 'rgba(0,0,0,0.5)', 
+                  display: 'flex', 
+                  justifyContent: 'center', 
+                  alignItems: 'center',
+                  borderRadius: '50%',
+                  opacity: 0,
+                  transition: 'opacity 0.2s ease'
+                }}
+              >
+                <Typography color="white" variant="body2">Change Photo</Typography>
+              </Box>
+            </Box>
+            <input
+              type="file"
+              ref={fileInputRef}  
+              style={{ display: "none" }}
+              id="vehicle-upload"
+              accept="image/jpeg, image/png, application/pdf"
+              onChange={(e) => handleFileChange(e, setProfileimage, setPreviewImage, "user")}
+            />
+            {/* Name Input */}
+            <TextField
+              label="Full Name"
+              variant="outlined"
+              value={editedName}
+              onChange={(e) => setEditedName(e.target.value)}
+              fullWidth
+              sx={{ mb: 2 }}
+            />
+          </Box>
+        ) : (
+          <Box sx={{ textAlign: 'center' }}>
+            <Avatar
+              src={`${import.meta.env.VITE_IMAGEURL}/${driverState?.profileImage}` || "/default-avatar.png"}
+              sx={{ 
+                width: 120, 
+                height: 120, 
+                mx: "auto", 
+                mb: 2,
+                border: '4px solid white',
+                boxShadow: '0 4px 10px rgba(0,0,0,0.15)'
+              }}
+            />
+            <Typography variant="h5" fontWeight="bold" mb={1}>{driverState?.name}</Typography>
+            <Chip 
+              label="Active Driver" 
+              color="success" 
+              size="small" 
+              sx={{ fontWeight: 'bold', mb: 2 }}
+            />
+            
+            <Divider sx={{ my: 2 }} />
+            
+            <Box 
+              sx={{ 
+                display: 'flex', 
+                justifyContent: 'space-between', 
+                alignItems: 'center',
+                px: 2,
+                py: 1,
+                bgcolor: 'rgba(0,0,0,0.02)',
+                borderRadius: 1
+              }}
+            >
+              <Typography variant="body2" color="textSecondary">
+                Account Status
+              </Typography>
+              <Typography variant="body2" fontWeight="medium">
+                <Chip 
+                  label={driverState?.status} 
+                  size="small" 
+                  color="primary" 
+                  sx={{ fontWeight: 'bold' }}
+                />
+              </Typography>
+            </Box>
+          </Box>
+        )}
+      </CardContent>
+
+      {/* Card Footer */}
+      <Box 
+        sx={{ 
+          display: 'flex', 
+          justifyContent: 'center', 
+          p: 2, 
+          bgcolor: 'rgba(0,0,0,0.02)',
+          borderTop: '1px solid rgba(0,0,0,0.05)'
+        }}
+      >
+        {editingSection === "profile" ? (
+          <Button
+            variant="contained"
+            color="primary"
+            startIcon={<SaveIcon />}
+            onClick={() => handleUpdate("profile")}
+            disabled={isUpdating}
+            sx={{ 
+              borderRadius: 4,
+              px: 3,
+              textTransform: 'none',
+              fontWeight: 'bold'
+            }}
+          >
+            {isUpdating ? "Saving..." : "Save Changes"}
+          </Button>
+        ) : (
+          <Button
+            variant="outlined"
+            color="primary"
+            startIcon={<EditIcon />}
+            onClick={() => setEditingSection("profile")}
+            sx={{ 
+              borderRadius: 4,
+              px: 3,
+              textTransform: 'none',
+              fontWeight: 'bold'
+            }}
+          >
+            {isUpdating ? "Updating..." : "Edit Profile"}
+          </Button>
+        )}
+      </Box>
+    </Card>
 
 
 
       {/* Location Section */}
-      <Card sx={{ mb: 3, p: 2 }}>
-        <CardContent>
-          <Typography variant="subtitle1" color="textSecondary">
-            Location
-          </Typography>
-          {editingSection === "place" ? (
-            <div className="mt-2">
-              <LocationPicker onLocationSelect={handleLocationSelect}  defaultAddress={driverState?.place} />
-            </div>
-          ) : (
-            <Typography variant="h6">{driverState?.place}</Typography>
-          )}
-        </CardContent>
+      <Card 
+      elevation={4} 
+      sx={{ 
+        mb: 3, 
+        borderRadius: 2,
+        overflow: 'hidden',
+        transition: 'all 0.3s ease',
+        '&:hover': {
+          boxShadow: '0 8px 24px rgba(0,0,0,0.12)'
+        },
+        maxWidth: isMobile ? '100%' : '700px', // Matching the profile card width
+        margin: '0 auto'
+      }}
+    >
+      {/* Location Card Header */}
+      <Box sx={{ 
+        p: 2, 
+        background: 'linear-gradient(45deg, #4CAF50 30%, #81C784 90%)', // Different gradient for distinction
+        color: 'white',
+        display: 'flex',
+        alignItems: 'center'
+      }}>
+        <LocationOnIcon sx={{ mr: 1 }} />
+        <Typography variant="h5" fontWeight="bold">
+          Location
+        </Typography>
+      </Box>
+
+      <CardContent sx={{ p: 3 }}>
+        {editingSection === "place" ? (
+          <Box className="mt-2">
+            <Typography variant="body2" color="textSecondary" mb={2}>
+              Select your service area or primary location
+            </Typography>
+            <LocationPicker onLocationSelect={handleLocationSelect} defaultAddress={driverState?.place} />
+          </Box>
+        ) : (
+          <Box>
+            <Typography variant="body2" color="textSecondary" mb={1}>
+              Current Location
+            </Typography>
+            <Box 
+              sx={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                p: 2, 
+                borderRadius: 1,
+                bgcolor: 'rgba(0,0,0,0.02)',
+                border: '1px solid rgba(0,0,0,0.05)'
+              }}
+            >
+              <LocationOnIcon color="primary" sx={{ mr: 1 }} />
+              <Typography variant="h6">
+                {driverState?.place || "No location set"}
+              </Typography>
+            </Box>
+          </Box>
+        )}
+      </CardContent>
+
+      {/* Card Footer */}
+      <Box 
+        sx={{ 
+          display: 'flex', 
+          justifyContent: 'center', 
+          p: 2, 
+          bgcolor: 'rgba(0,0,0,0.02)',
+          borderTop: '1px solid rgba(0,0,0,0.05)'
+        }}
+      >
         {editingSection === "place" ? (
           <Button
             variant="contained"
             color="primary"
-            sx={{ m: 2 }}
+            startIcon={<SaveIcon />}
             onClick={() => handleUpdate("place")}
+            sx={{ 
+              borderRadius: 4,
+              px: 3,
+              textTransform: 'none',
+              fontWeight: 'bold'
+            }}
           >
-            Save
+            Save Location
           </Button>
         ) : (
           <Button
             variant="outlined"
             color="secondary"
-            sx={{ m: 2 }}
+            startIcon={<EditIcon />}
             onClick={() => setEditingSection("place")}
+            sx={{ 
+              borderRadius: 4,
+              px: 3,
+              textTransform: 'none',
+              fontWeight: 'bold'
+            }}
           >
-            Edit
+            Edit Location
           </Button>
         )}
-      </Card>
+      </Box>
+    </Card>
 
       {/* Contact Details Section ==============================================================*/}
       <Card sx={{ mb: 3, p: 2 }}>
@@ -516,6 +832,7 @@ const handleFileChange = (
            {isUpdating ? "Updating..." : "Edit"}
           </Button>
         )}
+          
       </Card>
      {/* Documents Section --------------------------------------------------------------------------*/}
      
@@ -747,7 +1064,7 @@ const handleFileChange = (
     </Grid>
   )}
 </Card>
-
+{isModalOpen && <ChangePassword role="driver" onClose={() => setIsModalOpen(false)} />}
       <ToastContainer/>
     </Box>
     

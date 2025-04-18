@@ -47,6 +47,9 @@ export interface IUser{
     licenseImage: string;
     status: "pending" | "approved" | "rejected"
     isBlock: boolean;
+    
+stripeAccountId?:string
+activePayment?:boolean
     reason?:string
     role: "driver";
   }

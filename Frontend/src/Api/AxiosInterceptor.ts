@@ -3,7 +3,7 @@ import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse, AxiosError, In
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL 
 
-type TokenType = "user_accessToken" | "driver_accessToken" | "admin_accessToken";
+type TokenType ="user_accessToken" | "driver_accessToken" | "admin_accessToken";
 
 
 export const UserAPI: AxiosInstance = axios.create({
@@ -20,7 +20,6 @@ export const AdminAPI: AxiosInstance = axios.create({
   baseURL: `${BASE_URL}/admin`,
   withCredentials: true,
 });
-
 
 const attachToken = (instance: AxiosInstance, tokenKey: TokenType) => {
   instance.interceptors.request.use(
@@ -43,7 +42,7 @@ const redirectToLogin = (tokenKey: TokenType) => {
   const loginRoutes: Record<TokenType, string> = {
     user_accessToken: "/login?type=user",
     driver_accessToken: "/login?type=driver",
-    admin_accessToken: "/login?type=admin",
+    admin_accessToken: "/admin",
   };
   window.location.href = loginRoutes[tokenKey];
 };
@@ -55,7 +54,14 @@ const attachResponseInterceptor = (instance: AxiosInstance, tokenKey: TokenType)
     async (error: AxiosError) => {
       const originalRequest = error.config as AxiosRequestConfig & { _retry?: boolean };
 
-      if (error.response?.status === 401 && !originalRequest._retry) {
+      if ((error.response?.status === 401 || error.response?.status === 403) && !originalRequest._retry){
+        if ((error.response?.data as any)?.blocked) {
+          console.warn("Blocked account detected. Redirecting to login...");
+          alert("Your account has been blocked. Please contact support.");
+          localStorage.removeItem(tokenKey);
+          redirectToLogin(tokenKey);
+          return Promise.reject(error);
+        }
         originalRequest._retry = true; // Prevent infinite loop
 
         try {

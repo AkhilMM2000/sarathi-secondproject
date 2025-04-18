@@ -6,5 +6,6 @@ router
   .post('/refresh-token', AuthController.refreshToken)  
   .post('/forgot-password', AuthController.forgotPassword)  
   .post('/reset-password', AuthController.resetPassword)
+  .patch('/change-password',AuthController.ChangePassword)
    .post('/logout',AuthController.logout)
 export default router;

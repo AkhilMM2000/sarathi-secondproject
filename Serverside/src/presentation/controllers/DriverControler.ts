@@ -10,6 +10,10 @@ import { AuthError } from "../../domain/errors/Autherror";
 import { GetDriverProfile } from "../../application/use_cases/Driver/Getdriverprofile";
 import { EditDriverProfile } from "../../application/use_cases/Driver/EditDriverProfile";
 import { AuthenticatedRequest } from "../../middleware/authMiddleware";
+import { OnboardDriverUseCase } from "../../application/use_cases/Driver/DriverOnboarding";
+import { GetUserBookings } from "../../application/use_cases/Driver/Getdriverbooking";
+import { BookingWithUsername, PaginatedResult } from "../../domain/repositories/IBookingrepository";
+import { VerifyDriverPaymentAccount } from "../../application/use_cases/Driver/VerifyAccountStatus";
 
 export class DriverController {
   static async registerDriver(req: Request, res: Response) {
@@ -103,16 +107,16 @@ export class DriverController {
   }
   static async editDriverProfile(req: Request, res: Response) {
     try {
-      const driverId = req.params.id; // Get driver ID from request params
-      const updateData = req.body; // Get update data from request body
-
+      const driverId = req.params.id; 
+      const updateData = req.body; 
+ 
       const editDriverProfileUseCase = container.resolve(EditDriverProfile);
       const updatedDriver = await editDriverProfileUseCase.execute(
         driverId,
         updateData
       );
-
-      res.status(200).json({ success: true, driver: updatedDriver });
+        
+      res.status(200).json({success: true, driver: updatedDriver });
     } catch (error) {
       if (error instanceof AuthError) {
         res.status(error.statusCode).json({
@@ -123,7 +127,81 @@ export class DriverController {
       }
     }
   }
+  
+  static async onboardDriver(req: AuthenticatedRequest, res: Response) {
+    try {
+      let{ email, driverId } = req.body;
+if(!driverId){
+  driverId=req.user?.id
+}
+      if (!email || !driverId) {
+        res.status(400).json({ message: 'Email and driverId are required' });
+        return
+      }
 
+      const onboardDriverUseCase = container.resolve(OnboardDriverUseCase);
+      const onboardingUrl = await onboardDriverUseCase.execute(email, driverId);
 
+      res.status(200).json({ url: onboardingUrl });
+    } catch (error: any) {
+      console.error('Stripe onboarding error:', error);
+      if (error instanceof AuthError) {
+        res.status(error.statusCode).json({
+          success: false,
+          error: error.message,
+        });
+        return;
+      }
+    }
+  }
+  static async getBookingsForDriver(req: AuthenticatedRequest, res: Response){
+   const driverId=req.user?.id;
+   if(!driverId){
+    res.status(400).json({ message: "Driver ID is required" });
+    return 
+   }
+    const { page = 1, limit = 2 } = req.query;
+
+    try {
+      const getUserBookings = container.resolve(GetUserBookings);
+
+      const paginatedBookings: PaginatedResult<BookingWithUsername> =
+        await getUserBookings.execute(driverId, Number(page), Number(limit));
+
+      res.status(200).json({
+        data: paginatedBookings.data,
+        total: paginatedBookings.total,
+        totalPages: paginatedBookings.totalPages,
+        currentPage: paginatedBookings.page,
+      });
+    } catch (error: any) {
+      console.error('Stripe onboarding error:', error);
+      if (error instanceof AuthError) {
+        res.status(error.statusCode).json({
+          success: false,
+          error: error.message,
+        });
+        return;
+      }
+    }
+  }
+
+  static async verifyAccount(req: Request, res: Response) {
+    try {
+      const { driverId } = req.body;
+      const useCase = container.resolve(VerifyDriverPaymentAccount);
+      await useCase.execute(driverId);
+      res.json({ success: true, message: 'Payment activated for driver' });
+    } catch (error: any) {
+      console.error('Stripe onboarding error:', error);
+      if (error instanceof AuthError) {
+        res.status(error.statusCode).json({
+          success: false,
+          error: error.message,
+        });
+        return;
+      }
+    }
+  }
   
 }

@@ -2,11 +2,11 @@ import {  Routes, Route, BrowserRouter } from "react-router-dom";
 import Home from "../user/Home";
 import UserRegister from "../user/UserRegister";
 import OTPVerification from "../user/OtpVerification";
-import Navbar from "../user/Navbar";
+import Navbar from "../components/Navbar";
 import Footer from "../user/Footer";
 import Body from "./Body";
 import UserLogin from "../user/UserLogin";
-import UserHome from "../user/UserHome";
+import UserHome from "../components/UserHome";
 import UserBody from "./UserBody";
 
 
@@ -15,6 +15,10 @@ import Dashboards from "../user/Dashboard";
 import Vehicle from "../user/Vehicle";
 import UserDashlayout from "../user/DashboardLayout";
 import ResetPassword from "../components/ResetPassword";
+import DriverList from "../components/ListDrivers";
+import DriverListedPage from "../user/DriverListedPage";
+import BookDriver from "../user/BookDriver";
+import BookRides from "../user/BookRides";
 
 const AppRoutes = () => {
   return (
@@ -31,16 +35,20 @@ const AppRoutes = () => {
         
         <Route path="/" element={<UserBody/>}>
         <Route path="/home" element={<UserHome/>}/>
+        <Route path="/drivers" element={<DriverListedPage/>}/>
+        <Route path="/bookslot/:driverID" element={<BookDriver/>}/>
         </Route>
-
+       
       
         <Route path="/userhome" element={<UserDashlayout />}>
           {/* Nested Routes - Only Right Side Content Changes */}
           <Route index element={<Dashboards />} /> {/* Default page: /driver */}
           <Route path="dashboard" element={< Dashboards  />} />
           <Route path="vehicle" element={< Vehicle  />} />
+          <Route path="rides" element={< BookRides/>} />
         </Route>
       </Routes>
+    
     
   );
 };

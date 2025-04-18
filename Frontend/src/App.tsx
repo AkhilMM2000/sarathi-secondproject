@@ -1,4 +1,5 @@
 import { BrowserRouter } from "react-router-dom";
+
 import AppRoutes from "./routes/index";
 import AdminRoute from "./routes/AdminRoute";
 import DriverRoute from "./routes/DriverRoute";

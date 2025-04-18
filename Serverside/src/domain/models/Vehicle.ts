@@ -1,6 +1,5 @@
 import { Types } from "mongoose";
 
-// Enum for Vehicle Type
 export enum VehicleType {
   CAR = "four wheel",
   HEAVY = "Heavy",
@@ -14,7 +13,7 @@ export interface Vehicle {
   Register_No: string;
   ownerName: string;
   vehicleName: string;
-  vehicleType: VehicleType; // Strict Enum
+  vehicleType: VehicleType;
   polution_expire: Date;
   createdAt?: Date;
   updatedAt?: Date;

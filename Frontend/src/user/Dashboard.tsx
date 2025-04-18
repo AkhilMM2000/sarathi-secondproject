@@ -1,4 +1,5 @@
 import { ChangeEvent, useEffect, useState } from "react";
+import LockIcon from '@mui/icons-material/Lock';
 import { 
   Card, 
   CardContent, 
@@ -34,6 +35,7 @@ import { getLoggedUserApi, updateLoggedUserApi } from "../Api/userService";
 import { toast ,ToastContainer} from "react-toastify";
 import ApiService from "../Api/ApiService";
 import useAuth from "../hooks/useAuth";
+import ChangePassword from "../components/ChangePassword";
 
 // Define TypeScript interfaces
 
@@ -59,7 +61,7 @@ console.log(Currentuser);
   const [openModal, setOpenModal] = useState(false);
   const [editedUser, setEditedUser] = useState<Partial<IUser>>({ ...user });
   const [isEdit,setIsEdit]=useState<boolean>(false)
-
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [profileImageFile, setProfileImageFile] = useState<File | null>(null);
 const [profilePreview, setProfilePreview] = useState<string | null>(null);
 
@@ -238,9 +240,9 @@ const handleSave = async () => {
 
     // Close modal after successful update
     handleCloseModal();
-  } catch (error) {
+  } catch (error:any) {
     console.error("Error updating:", error);
-    toast.error("❌ Update failed. Please try again.", { autoClose: 1000 });
+    toast.error(`${error.response.data.message}`, { autoClose: 1000 });
     setIsEdit(false);
   }
 };
@@ -253,56 +255,78 @@ const handleSave = async () => {
       bgcolor: "#f5f7fa",
       minHeight: "100vh"
     }}>
-      <Paper 
-        elevation={0} 
-        sx={{ 
-          py: 5, 
-          display: "flex", 
-          flexDirection: "column", 
-          alignItems: "center", 
-          mb: 4, 
-          borderRadius: 3,
-          background: "linear-gradient(135deg, #6b73ff 0%, #000dff 100%)",
-          color: "white"
-        }}
-      >
-        {/* Location Section */}
-        <Box sx={{ 
-          display: "flex", 
-          alignItems: "center", 
-          mb: 3,
-          px: 3,
-          py: 1,
-          borderRadius: 50,
-          bgcolor: "rgba(255, 255, 255, 0.2)",
-        }}>
-          <LocationOnIcon sx={{ mr: 1 }} />
-          <Typography variant="subtitle1">
-            {Currentuser?.place}
-          </Typography>
-        </Box>
-        
-        <Avatar 
-        sx={{ 
-          width: 140, // Increased from 120 to 140
-          height: 140, // Increased from 120 to 140
-          border: "5px solid #f0f2f5", // Slightly thicker border
-          boxShadow: 3 // Increased shadow for better depth
-        }}
-          src={`${import.meta.env.VITE_IMAGEURL}/${Currentuser?.profile}`}
-        />
-        <Typography variant="h4" fontWeight="bold" gutterBottom>
-          {Currentuser?.name}
-        </Typography>
-        <Chip 
-          label="WELCOME" 
-          sx={{ 
-            bgcolor: "rgba(255, 255, 255, 0.2)", 
-            color: "white",
-            fontWeight: "bold"
-          }} 
-        />
-      </Paper>
+     <Paper 
+  elevation={0} 
+  sx={{ 
+    py: 5, 
+    display: "flex", 
+    flexDirection: "column", 
+    alignItems: "center", 
+    mb: 4, 
+    borderRadius: 3,
+    background: "linear-gradient(135deg, #6b73ff 0%, #000dff 100%)",
+    color: "white"
+  }}
+>
+  {/* Location Section */}
+  <Box sx={{ 
+    display: "flex", 
+    alignItems: "center", 
+    mb: 3,
+    px: 3,
+    py: 1,
+    borderRadius: 50,
+    bgcolor: "rgba(255, 255, 255, 0.2)",
+  }}>
+    <LocationOnIcon sx={{ mr: 1 }} />
+    <Typography variant="subtitle1">
+      {Currentuser?.place}
+    </Typography>
+  </Box>
+  
+  <Avatar 
+    sx={{ 
+      width: 140,
+      height: 140,
+      border: "5px solid #f0f2f5",
+      boxShadow: 3
+    }}
+    src={`${import.meta.env.VITE_IMAGEURL}/${Currentuser?.profile}`}
+  />
+  <Typography variant="h4" fontWeight="bold" gutterBottom>
+    {Currentuser?.name}
+  </Typography>
+  <Chip 
+    label="WELCOME" 
+    sx={{ 
+      bgcolor: "rgba(255, 255, 255, 0.2)", 
+      color: "white",
+      fontWeight: "bold",
+      mb: 2  // Added margin bottom for spacing before the button
+    }} 
+  />
+  
+  {/* Change Password Button */}
+  <Button
+    variant="contained"
+    startIcon={<LockIcon />}
+    sx={{
+      bgcolor: "rgba(255, 255, 255, 0.2)",
+      color: "white",
+      fontWeight: "bold",
+      '&:hover': {
+        bgcolor: "rgba(255, 255, 255, 0.3)"
+      },
+      px: 3,
+      py: 1,
+      borderRadius: 2
+    }}
+    onClick={() => setIsModalOpen(true)}
+  >
+    Change Password
+  </Button>
+  
+</Paper>
       
       <Card sx={{ width: "100%", borderRadius: 3, boxShadow: "0 4px 20px rgba(0,0,0,0.08)", overflow: "visible" }}>
         <CardContent sx={{ p: { xs: 2, sm: 3, md: 4 } }}>
@@ -733,6 +757,7 @@ const handleSave = async () => {
           </Button>
         </DialogActions>
       </Dialog>
+      {isModalOpen && <ChangePassword role="user" onClose={() => setIsModalOpen(false)} />}
       <ToastContainer/>
     </Box>
   );
