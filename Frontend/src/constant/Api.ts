@@ -14,3 +14,4 @@ export const getApiInstance = (role: UserRole) => {
       throw new Error("Invalid role");
   }
 };
+export const signUrl='http://localhost:5173/user'

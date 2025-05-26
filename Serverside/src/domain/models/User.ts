@@ -14,7 +14,13 @@ export interface User {
   password: string;
   googleId?: string;
   referralCode?: string;
+  onlineStatus: 'online' | 'offline';
+  lastSeen: Date;
   role: "user" | "admin"; 
+  referalPay?:boolean
+  activePayment?: boolean;
+  stripeAccountId?: string;
+  referredBy?: string;
   isBlock:Boolean;
   createdAt?: Date;
 }

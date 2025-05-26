@@ -9,7 +9,7 @@ import { GoogleOAuthProvider } from "@react-oauth/google";
 
 const queryClient = new QueryClient();
 createRoot(document.getElementById('root')!).render(
-  <StrictMode>
+  
      <Provider store={store}>
 
      <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
@@ -20,5 +20,5 @@ createRoot(document.getElementById('root')!).render(
     </QueryClientProvider>
     </GoogleOAuthProvider>
     </Provider>
-  </StrictMode>,
+ 
 )

@@ -7,9 +7,16 @@ import DocumentsVerify from "../driver/Documents";
 import DriverDashboard from "../driver/Dashboard";
 import DriverOnboardingComplete from "../driver/Onboarding";
 import RidesDriver from "../driver/Rides";
+import VideoCallPage from "../components/VideoCall";
+import { RideHistoryPage } from "../components/RideHistoryPage";
+import { useSelector } from "react-redux";
+import { RootState } from "../store/ReduxStore";
 
 
 const DriverRoute = () => {
+    const driverState = useSelector(
+    (state: RootState) => state.driverStore.driver
+  );
   return (
 
       <Routes>
@@ -25,6 +32,8 @@ const DriverRoute = () => {
      <Route path="onboard-success" element={<DriverOnboardingComplete />}/>
      <Route path="onboard-failure'" element={<DriverOnboardingComplete />}/>
       <Route path="rides" element={<RidesDriver/>} />
+       <Route path="call" element ={<VideoCallPage role="driver"/>}/>
+         <Route path="history" element={<RideHistoryPage role="driver" userId={driverState?._id!}/> }/>
     </Route>
 
       </Routes>

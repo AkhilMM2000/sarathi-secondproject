@@ -3,6 +3,9 @@ import { IUserRepository, UserWithVehicleCount } from "../../domain/repositories
 import { User } from "../../domain/models/User";
 import UserModel from "./modals/userschema";  // MongoDB Schema
 import { isValidObjectId, Types } from "mongoose";
+import { AuthError } from "../../domain/errors/Autherror";
+import { HTTP_STATUS_CODES } from "../../constants/HttpStatusCode";
+import { ERROR_MESSAGES } from "../../constants/ErrorMessages";
 
 
 @injectable()
@@ -30,6 +33,7 @@ export class MongoUserRepository implements IUserRepository {
     return user.toObject() as User;
   }
     
+
   async findByEmail(email: string): Promise<User | null> {
     try {
       return await UserModel.findOne({ email });
@@ -39,13 +43,23 @@ export class MongoUserRepository implements IUserRepository {
     }
   }
 
+async findByReferralCode(referralCode: string): Promise<User | null> {
+  if (!referralCode) return null; 
+  try {
+    return await UserModel.findOne({ referralCode });
+  } catch (error:any) {
+    console.error("Error finding user by referral code:", error.message);
+    throw new AuthError("Failed to find user by referral code",HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR);
+  }
+}
+
   async getUserById(userId: string): Promise<User | null> {
     try {
       if (!isValidObjectId(userId)) return null; // ✅ Validate ID format
       return await UserModel.findById(new Types.ObjectId(userId));
-    } catch (error) {
-      console.error("Error finding user by ID:", error);
-      throw new Error("Failed to find user by ID");
+    } catch (error:any) {
+      console.error("Error finding user by ID:", error.message);
+      throw new AuthError(ERROR_MESSAGES.INTERNAL_SERVER_ERROR,HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR);
     }
   }
   
@@ -136,4 +150,20 @@ async blockOrUnblockUser(userId: string,isBlock: boolean): Promise<UserWithVehic
     throw new Error(`Failed to block user: ${(error as Error).message}`);
   }
 }
+
+async findByEmailOrMobile( email: string,mobile: string,): Promise<boolean> {
+  try {
+   
+    const user = await UserModel.findOne({ 
+      $or: [{ email }, { mobile }] 
+    });
+
+    return !!user; 
+  } catch (error) {
+    console.error("Error finding user by email or mobile:", error);
+    return false; // or throw an AppError if you want to handle differently
+  }
+}
+
+
 }

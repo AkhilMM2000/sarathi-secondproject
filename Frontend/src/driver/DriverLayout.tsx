@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import  { useEffect, useRef, useState } from 'react';
 import { Outlet, Link, useLocation, useNavigate } from "react-router-dom";
 import { 
   Drawer, 
@@ -13,17 +13,17 @@ import {
   Divider, 
   Tooltip,
   IconButton,
-  Badge,
   useMediaQuery,
   useTheme,
+  Snackbar,
+  Alert,
+  Button,
+  Rating,
 } from "@mui/material";
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import RouteIcon from "@mui/icons-material/Route";
 import HistoryIcon from "@mui/icons-material/History";
-import AccountBalanceWalletIcon from "@mui/icons-material/AccountBalanceWallet";
-import NotificationsIcon from "@mui/icons-material/Notifications";
-import SettingsIcon from "@mui/icons-material/Settings";
-import HelpIcon from "@mui/icons-material/Help";
+
 import LogoutIcon from "@mui/icons-material/Logout";
 import DirectionsCarIcon from "@mui/icons-material/DirectionsCar";
 import MenuIcon from "@mui/icons-material/Menu";
@@ -31,8 +31,9 @@ import CloseIcon from "@mui/icons-material/Close";
 import StarIcon from "@mui/icons-material/Star";
 import { AppDispatch, RootState } from "../store/ReduxStore";
 import { useDispatch, useSelector } from "react-redux";
-import { clearDriver, setDriver } from '../store/slices/DriverStore';
+import {  setDriver } from '../store/slices/DriverStore';
 import { handleDriverData } from '../Api/driverService';
+import moment from "moment";
 import ApiService from '../Api/ApiService';
 const menuItems = [
   { text: "Dashboard", icon: <DashboardIcon />, path: "/driver" },
@@ -42,6 +43,11 @@ const menuItems = [
 ];
 import usePreventBackNavigation from '../hooks/usePreventBackNavigation';
 import { toast,ToastContainer} from 'react-toastify';
+import { CreatesocketConnection } from '../constant/socket';
+import CallModal from '../components/CallModal';
+import { CallerInfo } from '../constant/types';
+import { useRingtone } from '../hooks/useRingtone';
+import ViewReviewsModal from '../components/ViewReviewsModal';
 const DriverSidebar = () => {
    usePreventBackNavigation()
   const location = useLocation();
@@ -49,15 +55,61 @@ const DriverSidebar = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [open, setOpen] = useState(false);
+  const [message, setMessage] = useState('');
+  const[driverId,setDriverId]=useState<string>('')
   const dispatch=useDispatch<AppDispatch>()
   const driverState = useSelector(
     (state: RootState) => state.driverStore.driver
   );
+   const [openReviewModal, setOpenReviewModal] = useState(false);
+//video call management
+const [callModalOpen, setCallModalOpen] = useState<boolean>(false);
+  const [type,  setCallType] = useState<"incoming" | "outgoing">("incoming");
+  const [callerInfo, setCallerInfo] = useState<CallerInfo | null>(null);
+ 
+const { playRingtone, stopRingtone } = useRingtone('/sounds/ringtone.mp3');
+  
+
+useEffect(()=>{
+  const socket = CreatesocketConnection();
+
+  socket.on("call:incoming", ({ fromId, callerName, role }) => {
+    setCallerInfo({ fromId, callerName, role }); // store info in state
+    setCallType("incoming");
+    setCallModalOpen(true);
+    playRingtone();
+  });
+
+  return () => {
+    socket.off("call:incoming");
+  };
+},[])
+  const handleAccept = () => {
+  const socket = CreatesocketConnection();
+  socket.emit('call:accept',{toId:callerInfo?.fromId,role:callerInfo?.role})
+    stopRingtone();
+    setCallModalOpen(false);
+    navigate('/driver/call?type=receiver')
+  };
+
+  const handleReject = () => {
+    const socket = CreatesocketConnection();
+    socket.emit("call:reject",{toId:callerInfo?.fromId})
+
+    stopRingtone();
+    setCallModalOpen(false);
+  };
+
+
+
 
   useEffect(() => {
     const fetchDriver = async () => {
       try {
         const driverData = await handleDriverData("driver");
+      
+        setDriverId(driverData._id)
         dispatch(setDriver(driverData)); // Update Redux store
       } catch (error: any) {
         const errorMessage =
@@ -71,6 +123,49 @@ const DriverSidebar = () => {
 
     fetchDriver();
   }, [dispatch]);
+
+
+
+
+
+  //here i manage the all the driver side notification real time using socket io connection
+  useEffect(() => {
+    const socket =CreatesocketConnection(); 
+    if (driverId) {
+      socket.emit('driver:online', driverId); 
+    }
+  
+    socket.on('booking:new', ({startDate,newRide}) => {
+      const formattedDate = moment(startDate).format("MMMM D, dddd");
+setMessage(`📢 New booking received from ${formattedDate}`);
+      
+      setOpen(true);
+    });
+  
+  socket.on('cancel:booking',({status,reason,startDate,cancel:booking})=>{
+    const formattedDate = moment(startDate).format("MMMM D, dddd");
+    setMessage(`cancel booking  ${formattedDate} due to ${reason}`);
+      
+      setOpen(true);
+  })
+
+ socket.on('payment:status',({status,startDate,bookingId})=>{
+  
+  console.log(status,startDate,"paymentStatus event")
+  const formattedDate = moment(startDate).format("MMMM D, dddd");
+  setMessage(`Your ride payment has been ${status} on ${formattedDate}.`);
+  setOpen(true);
+ })
+
+    return () => {
+   socket.off('cancel:booking')
+      socket.off('booking:new')
+      socket.off('payment:status')
+      
+    };
+  }, [driverId]);
+  
+
 
   const handleClick = async () => {
     try {
@@ -171,9 +266,23 @@ const DriverSidebar = () => {
         />
         <Typography variant="h6" fontWeight="bold">{driverState?.name}</Typography>
         <Box sx={{ display: "flex", alignItems: "center", mt: 0.5 }}>
-          <StarIcon sx={{ color: "#FFD700", fontSize: 20, mr: 0.5 }} />
-          <Typography variant="body1" color="text.secondary">4.9 (483 rides)</Typography>
+          <Rating
+    value={driverState?.averageRating || 0}
+    precision={0.1}
+    readOnly
+    size="small"
+  />
+         
+          
         </Box>
+          <Button 
+    variant="contained" 
+    size='small'
+    onClick={() => setOpenReviewModal(true)} 
+    sx={{ mt: 1 }}
+  >
+    View Reviews
+  </Button>
         <Box sx={{ 
           mt: 2, 
           backgroundColor: "#e3f2fd", 
@@ -209,6 +318,32 @@ const DriverSidebar = () => {
           </ListItemIcon>
           <ListItemText primary="Logout" primaryTypographyProps={{ fontWeight: "medium" }} onClick={handleClick}/>
         </ListItemButton>
+        <Snackbar
+      open={open}
+      autoHideDuration={4000}
+      onClose={() => setOpen(false)}
+      anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+    >
+      <Alert onClose={() => setOpen(false)} severity="info" sx={{ width: '100%', fontSize: '1rem' }}>
+        {message}
+      </Alert>
+    </Snackbar>
+     <CallModal
+        open={callModalOpen}
+        type={type}
+      callerName={callerInfo?callerInfo.callerName:''}
+  role={callerInfo?callerInfo.role:"user"}
+  onAccept={handleAccept}
+  onReject={handleReject}
+      />
+        {driverId && (
+        <ViewReviewsModal
+        role='driver'
+          open={openReviewModal}
+          onClose={() => setOpenReviewModal(false)}
+          driverId={driverId}
+        />
+      )}
       </Box>
     </>
   );
@@ -291,7 +426,28 @@ const DriverSidebar = () => {
           <Outlet />
         </Box>
       </Box>
+      <Snackbar
+      open={open}
+      autoHideDuration={10000}
+      onClose={() => setOpen(false)}
+      anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+    >
+      <Alert onClose={() => setOpen(false)} severity="info" sx={{ width: '100%', fontSize: '1rem' }}>
+        {message}
+      </Alert>
+    </Snackbar>
       <ToastContainer/>
+      <CallModal
+        open={callModalOpen}
+        type={type}
+      callerName={callerInfo?callerInfo.callerName:''}
+  role={callerInfo?callerInfo.role:"user"}
+  onAccept={handleAccept}
+  onReject={handleReject}
+      />
+
+    
+  
     </Box>
   );
 };

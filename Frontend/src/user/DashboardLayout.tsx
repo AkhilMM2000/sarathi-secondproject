@@ -25,6 +25,7 @@ import LogoutIcon from "@mui/icons-material/Logout";
 import EmojiTransportationIcon from "@mui/icons-material/EmojiTransportation";
 import MenuIcon from "@mui/icons-material/Menu";
 import CloseIcon from "@mui/icons-material/Close";
+import WalletOutlinedIcon from '@mui/icons-material/WalletOutlined';
 import ApiService from '../Api/ApiService';
 import { toast,ToastContainer } from 'react-toastify';
 import usePreventBackNavigation from '../hooks/usePreventBackNavigation';
@@ -32,12 +33,19 @@ import { AppDispatch, RootState } from '../store/ReduxStore';
 import { useDispatch, useSelector } from 'react-redux';
 import { setAuthUser } from '../store/slices/AuthuserStore';
 import { getLoggedUserApi } from '../Api/userService';
+import { CreatesocketConnection } from '../constant/socket';
+import { useRingtone } from '../hooks/useRingtone';
+import { CallerInfo } from '../constant/types';
+import CallModal from '../components/CallModal';
+import HomeOutlinedIcon from '@mui/icons-material/HomeOutlined';
 
 const menuItems = [
   { text: "Dashboard", icon: <DashboardIcon />, path: "/userhome/dashboard" },
   { text: "Vehicle Info", icon: <DirectionsCarIcon />, path: "/userhome/vehicle" },
   { text: "Current Rides", icon: <CommuteIcon />, path: "/userhome/rides" },
-  { text: "Ride History", icon: <HistoryIcon />, path: "/home" },
+  { text: "Ride History", icon: <HistoryIcon />, path: "/userhome/ridehistory" },
+  { text: "Wallet", icon: <WalletOutlinedIcon />, path: "/userhome/wallet" },
+  { text: "Home", icon: <HomeOutlinedIcon />, path: "/home" },
 ];
 
 const UserDashlayout= () => {
@@ -79,6 +87,44 @@ useEffect(() => {
 
   fetchLoggedUser();
 }, [dispatch]); 
+
+//video call management
+const [callModalOpen, setCallModalOpen] = useState<boolean>(false);
+  const [type,  setCallType] = useState<"incoming" | "outgoing">("incoming");
+  const [callerInfo, setCallerInfo] = useState<CallerInfo | null>(null);
+ 
+const { playRingtone, stopRingtone } = useRingtone('/sounds/ringtone.mp3');
+  
+
+useEffect(()=>{
+  const socket = CreatesocketConnection();
+
+  socket.on("call:incoming", ({ fromId, callerName, role }) => {
+    setCallerInfo({ fromId, callerName, role }); // store info in state
+    setCallType("incoming");
+    setCallModalOpen(true);
+    playRingtone();
+  });
+
+  return () => {
+    socket.off("call:incoming");
+  };
+},[])
+  const handleAccept = () => {
+  const socket = CreatesocketConnection();
+  socket.emit('call:accept',{toId:callerInfo?.fromId,role:callerInfo?.role})
+    stopRingtone();
+    setCallModalOpen(false);
+    navigate('/userhome/call?type=receiver')
+  };
+
+  const handleReject = () => {
+    const socket = CreatesocketConnection();
+    socket.emit("call:reject",{toId:callerInfo?.fromId})
+
+    stopRingtone();
+    setCallModalOpen(false);
+  };
 
 
   const renderMenuItems = () => (
@@ -219,8 +265,18 @@ useEffect(() => {
             primaryTypographyProps={{ fontWeight: "medium" }}
           />
         </ListItemButton>
+       
       </Box>
+         <CallModal
+        open={callModalOpen}
+        type={type}
+      callerName={callerInfo?callerInfo.callerName:''}
+  role={callerInfo?callerInfo.role:"user"}
+  onAccept={handleAccept}
+  onReject={handleReject}
+      />
     </>
+    
   );
 
   return (
@@ -311,6 +367,14 @@ useEffect(() => {
         </Box>
       </Box>
       <ToastContainer/>
+         <CallModal
+        open={callModalOpen}
+        type={type}
+      callerName={callerInfo?callerInfo.callerName:''}
+  role={callerInfo?callerInfo.role:"user"}
+  onAccept={handleAccept}
+  onReject={handleReject}
+      />
     </Box>
   );
 };

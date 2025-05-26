@@ -36,6 +36,7 @@ export interface Booking {
 paymentIntentId?:string;
     driver_fee?: number;
     platform_fee?: number;
+    walletDeduction?: number;
     createdAt?: Date;   
     updatedAt?: Date;
   }

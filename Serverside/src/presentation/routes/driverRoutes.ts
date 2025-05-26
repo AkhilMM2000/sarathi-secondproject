@@ -20,11 +20,49 @@ router
 router
   .route("/driver/:id")
   .all(protectRoute(["driver"]), checkBlockedMiddleware.handle.bind(checkBlockedMiddleware)) // Apply to all methods
-  .put(DriverController.editDriverProfile);
+  .put(DriverController.editDriverProfile)
+ 
+  router
+    .get("/ridehistory", 
+      protectRoute(["driver"]), 
+      checkBlockedMiddleware.handle.bind(checkBlockedMiddleware), 
+     BookingController.getRideHistory
+    ).patch('/auth/change-password',
+      protectRoute(['driver']),checkBlockedMiddleware.handle.bind(checkBlockedMiddleware),
+      AuthController.ChangePassword)
 
-  router.patch('/auth/change-password',protectRoute(['driver']),checkBlockedMiddleware.handle.bind(checkBlockedMiddleware),AuthController.ChangePassword)
-  router.post('/onboard',protectRoute(['driver']),checkBlockedMiddleware.handle.bind(checkBlockedMiddleware), DriverController.onboardDriver);
-router.get('/bookings',protectRoute(['driver']),checkBlockedMiddleware.handle.bind(checkBlockedMiddleware),DriverController.getBookingsForDriver)
-router.patch('/booking-status/:bookingId', protectRoute(['driver']), checkBlockedMiddleware.handle.bind(checkBlockedMiddleware), BookingController.updateStatus);
-router.post('/verify-account', protectRoute(['driver']), checkBlockedMiddleware.handle.bind(checkBlockedMiddleware), DriverController.verifyAccount);
+      .post('onboard',
+        protectRoute(['driver']),checkBlockedMiddleware.handle.bind(checkBlockedMiddleware),
+        DriverController.onboardDriver
+      )
+       .get('/bookings',protectRoute(['driver']),checkBlockedMiddleware.handle.bind(checkBlockedMiddleware),
+       
+        DriverController.getBookingsForDriver)
+       .patch('/booking-status/:bookingId',protectRoute(['driver']),checkBlockedMiddleware.handle.bind(checkBlockedMiddleware),
+        BookingController.updateStatus)
+
+        .post('verify-account',
+          protectRoute(['driver']),checkBlockedMiddleware.handle.bind(checkBlockedMiddleware),
+          DriverController.verifyAccount
+        ).get('/chat/:roomId',protectRoute(['driver']),checkBlockedMiddleware.handle.bind(checkBlockedMiddleware),
+        BookingController.getChatByBookingId
+        ).post('/chat/signature',protectRoute(['driver']),checkBlockedMiddleware.handle.bind(checkBlockedMiddleware),
+        BookingController.getChatSignature
+        ).get('/user/:id',protectRoute(['driver']),checkBlockedMiddleware.handle.bind(checkBlockedMiddleware),
+        DriverController.getUserById
+        ).get('/review/:id',protectRoute(['driver']),checkBlockedMiddleware.handle.bind(checkBlockedMiddleware),
+        BookingController.ReviewDriver
+        )
+ 
+ 
+ 
+
+
+
+// //chat related routes
+// router.get('/chat/:roomId', protectRoute(['driver']), checkBlockedMiddleware.handle.bind(checkBlockedMiddleware), BookingController.getChatByBookingId);
+// router.post('/chat/signature',protectRoute(["driver"]), checkBlockedMiddleware.handle.bind(checkBlockedMiddleware), BookingController.getChatSignature);
+// router.get('/user/:id', protectRoute(['driver']), checkBlockedMiddleware.handle.bind(checkBlockedMiddleware), DriverController.getUserById);
+
+// router.get('/review/:id',protectRoute(['driver']),checkBlockedMiddleware.handle.bind(checkBlockedMiddleware),BookingController.ReviewDriver);
 export default router;

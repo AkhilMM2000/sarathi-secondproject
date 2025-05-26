@@ -1,4 +1,5 @@
 import axios from "axios";
+import { DriverAPI, UserAPI } from "./AxiosInterceptor";
 
 
 class ApiService {
@@ -13,13 +14,14 @@ class ApiService {
       const response = await axios.post(`${this.baseUrl}/${type}/register`, formData);
       return response.data;
     } catch (error: any) {
-      throw error.response?.data?.message || "Registration failed";
+     
+      throw error.response?.data?.error || "Registration failed";
     }
   }
   
   async verifyOtp(otp: string, email: string,type: "users" | "drivers") {
     try {
-      const response = await axios.post(`${this.baseUrl}/${type}/verify-otp`, { otp, email,role:type });
+      const response = await axios.post(`${this.baseUrl}/${type}/verify-otp`, { otp, email,role:type },{withCredentials:true});
       return response.data;
     } catch (error: any) {
       throw error; 
@@ -89,6 +91,51 @@ class ApiService {
   
     }
   }
+  
+   async chatSignedUrls(role: "driver" | "user",fileType: string) {
+    try {
+      const api=role=='user'?UserAPI:DriverAPI
+      const response = await api.post('/chat/signature',{fileType})
+        
+      
+      return response.data;
+    } catch (error: any) {
+      throw error.response?.data?.message || "Failed to get signed URL";
+    }
+  }
+
+async uploadFileInChat(file: File, signedData: any): Promise<string> {
+  try {
+    console.log(signedData,'signature')
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("api_key", import.meta.env.VITE_CLOUDINARY_API_KEY);
+    formData.append("timestamp", signedData.timestamp.toString());
+    formData.append("signature", signedData.signature);
+    formData.append("public_id", signedData.public_id);
+    formData.append("folder", signedData.folder); // already provided
+    formData.append('upload_preset', signedData.upload_preset
+);
+
+    // ✅ Use resource_type as per backend decision
+    const resourceType = signedData.folder === "images" ? "image" : "raw";
+
+    const response = await axios.post(
+      `https://api.cloudinary.com/v1_1/${import.meta.env.VITE_CLOUDINARY_CLOUD_NAME}/${resourceType}/upload`,
+      formData
+    );
+
+    if (response.status === 200) {
+      console.log(response.data, 'Upload successful');
+      return response.data.secure_url;
+    }
+
+    throw new Error("File upload failed");
+  } catch (error: any) {
+   
+    throw error.response?.data?.message || "File upload failed";
+  }
+}
 
   async Login(formData: Record<string, any>, type: "users" | "drivers"|"admin") {
     try {

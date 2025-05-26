@@ -30,6 +30,21 @@ const DriverSchema = new Schema<IDriver>(
     createdAt: { type: Date, default: Date.now },
     stripeAccountId: { type: String, default: null },
     activePayment: { type: Boolean, default: false },
+    lastSeen : { type: Date, default: null },
+    onlineStatus: { type: String, enum: ['online', 'offline'], default: 'offline' },
+    
+    averageRating: {
+    type: Number,
+    default: 0,
+  },
+  totalRatings: {
+    type: Number,
+    default: 0,
+  },
+  totalRatingPoints: {
+    type: Number,
+    default: 0,
+  }
   },
 
   { timestamps: true }

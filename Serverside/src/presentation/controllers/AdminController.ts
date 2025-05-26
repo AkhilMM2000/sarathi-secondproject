@@ -9,6 +9,7 @@ import { GetDrivers } from "../../application/use_cases/Admin/GetDrivers";
 import { AdminChangeDriverStatus } from "../../application/use_cases/Admin/AdminChangeDriverStatus";
 import { BlockOrUnblockDriver } from "../../application/use_cases/Admin/BlockOrUnblockDriver";
 import { GetVehiclesByUser } from "../../application/use_cases/Admin/GetVehiclesByUser";
+import { HTTP_STATUS_CODES } from "../../constants/HttpStatusCode";
 
 export class AdminController {
   static async login(req: Request, res: Response) {
@@ -56,7 +57,7 @@ export class AdminController {
       const getAllUsers = container.resolve(GetAllUsers);
       const usersWithVehicleCount = await getAllUsers.execute();
 
-      res.status(200).json({
+      res.status(HTTP_STATUS_CODES.OK).json({
         success: true,
         data: usersWithVehicleCount,
       });
@@ -78,7 +79,7 @@ export class AdminController {
       const blockedUser = await blockUserUseCase.execute(userId,isBlock);
 
 
-      res.status(200).json({
+      res.status(HTTP_STATUS_CODES.OK).json({
         success: true,
         message: isBlock
         ? "User blocked successfully"
@@ -94,7 +95,7 @@ export class AdminController {
         return;
       }
 
-      res.status(500).json({ success: false, error: "Something went wrong" });
+      res.status(HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR).json({ success: false, error: "Something went wrong" });
       return;
     }
   }
@@ -104,10 +105,10 @@ export class AdminController {
       const getAllUsersUseCase = container.resolve(GetDrivers);
       const drivers = await getAllUsersUseCase.execute();
 
-      res.status(200).json(drivers);
+      res.status(HTTP_STATUS_CODES.OK).json(drivers);
     } catch (error) {
       console.error("Error fetching drivers:", error);
-      res.status(500).json({ message: "Failed to fetch drivers", error });
+      res.status(HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR).json({ message: "Failed to fetch drivers", error });
     }
   }
 

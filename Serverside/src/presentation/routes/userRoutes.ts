@@ -31,13 +31,14 @@ router
   router
   .route("/profile")
   .all(protectRoute(["user"]), checkBlockedMiddleware.handle.bind(checkBlockedMiddleware))
-  .get(UserController.getUserData); 
-
+  .get(UserController.getUserData)
+   
 
 router
   .route("/profile/:id")
   .all(protectRoute(["user"]), checkBlockedMiddleware.handle.bind(checkBlockedMiddleware))
-  .patch(UserController.updateUser);
+  .patch(UserController.updateUser)
+   
 
 
 router.get("/nearby",protectRoute(['user']),checkBlockedMiddleware.handle.bind(checkBlockedMiddleware),UserController.fetchDrivers);
@@ -45,11 +46,87 @@ router.get("/nearby",protectRoute(['user']),checkBlockedMiddleware.handle.bind(c
 router.patch('/auth/change-password',protectRoute(['user']),checkBlockedMiddleware.handle.bind(checkBlockedMiddleware),AuthController.ChangePassword)
 
 //Booking Routes
-router.post("/bookslot",protectRoute(["user"]), checkBlockedMiddleware.handle.bind(checkBlockedMiddleware),BookingController.bookDriver);
-router.post("/estimate-fare",protectRoute(["user"]), checkBlockedMiddleware.handle.bind(checkBlockedMiddleware), BookingController.getEstimatedFare);
-router.get("/bookslot", protectRoute(["user"]), checkBlockedMiddleware.handle.bind(checkBlockedMiddleware), BookingController.getUserBookings);
-router.patch("/update-booking/:rideId", protectRoute(["user"]), checkBlockedMiddleware.handle.bind(checkBlockedMiddleware), BookingController.attachPaymentIntent);
+router
+  .route("/bookslot")
+  .post(
+    protectRoute(["user"]),
+    checkBlockedMiddleware.handle.bind(checkBlockedMiddleware),
+    BookingController.bookDriver
+  )
+  .get(
+    protectRoute(["user"]),
+    checkBlockedMiddleware.handle.bind(checkBlockedMiddleware),
+    BookingController.getUserBookings
+  );
 
-router.post("/create-payment-intent", protectRoute(["user"]), checkBlockedMiddleware.handle.bind(checkBlockedMiddleware), UserController.createPaymentIntent);
-router.patch("/cancel-booking",protectRoute(['user']),checkBlockedMiddleware.handle.bind(checkBlockedMiddleware) ,BookingController.cancelBooking);
-export default router;
+
+router
+  .route("/estimate-fare")
+  .post(
+    protectRoute(["user"]),
+    checkBlockedMiddleware.handle.bind(checkBlockedMiddleware),
+    BookingController.getEstimatedFare
+  );
+router
+  .route("/update-booking/:rideId")
+  .patch(
+    protectRoute(["user"]),
+    checkBlockedMiddleware.handle.bind(checkBlockedMiddleware),
+    BookingController.attachPaymentIntent
+  );
+router
+  .route("/ridehistory")
+  .get(
+    protectRoute(["user"]),
+    checkBlockedMiddleware.handle.bind(checkBlockedMiddleware),
+    BookingController.getRideHistory
+  );
+
+
+
+router
+  .post("/payment-intent", 
+    protectRoute(["user"]), 
+    checkBlockedMiddleware.handle.bind(checkBlockedMiddleware), 
+    UserController.createPaymentIntent
+  )
+  .patch("/booking/cancel", 
+    protectRoute(["user"]), 
+    checkBlockedMiddleware.handle.bind(checkBlockedMiddleware), 
+    BookingController.cancelBooking
+  )
+  .get("/chat/:roomId", 
+    protectRoute(["user"]), 
+    checkBlockedMiddleware.handle.bind(checkBlockedMiddleware), 
+    BookingController.getChatByBookingId
+  )
+  .post("/chat/signature", 
+    protectRoute(["user"]), 
+    checkBlockedMiddleware.handle.bind(checkBlockedMiddleware), 
+    BookingController.getChatSignature
+  ).get('/driver/:id',
+    protectRoute(["user"]), 
+    checkBlockedMiddleware.handle.bind(checkBlockedMiddleware),
+     UserController.getDriverById 
+  ).get('/wallet',
+    protectRoute(["user"]), 
+    checkBlockedMiddleware.handle.bind(checkBlockedMiddleware),
+     UserController.WalletTransaction 
+  ).get('/wallet/ballence',
+    protectRoute(["user"]), 
+    checkBlockedMiddleware.handle.bind(checkBlockedMiddleware),
+     BookingController.Walletballence 
+  ).post('/wallet/ridepayment',
+    protectRoute(["user"]), 
+    checkBlockedMiddleware.handle.bind(checkBlockedMiddleware),
+     BookingController.WalletPayment 
+  ).post('/review',
+    protectRoute(["user"]), 
+    checkBlockedMiddleware.handle.bind(checkBlockedMiddleware),
+     UserController.submitReview
+  ).get('/review/:id',
+    protectRoute(['user']),checkBlockedMiddleware.handle.bind(checkBlockedMiddleware),
+      BookingController.ReviewDriver )
+
+  
+export default router; 

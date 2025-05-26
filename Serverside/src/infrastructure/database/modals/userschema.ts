@@ -16,10 +16,15 @@ const UserSchema = new Schema<UserDocument>({
   password: { type: String },
   googleId: { type: String },
   referralCode: { type: String },
+  referredBy: {  type: mongoose.Schema.Types.ObjectId, ref: "User" ,default: null },
   isBlock:{type:Boolean,default:false},
   role:{type:String,required:true,default:'user'},
   createdAt: { type: Date, default: Date.now },
-  
+  stripeAccountId: { type: String, default: null },
+  activePayment: { type: Boolean, default: false },
+  lastSeen : { type: Date, default: null },
+  onlineStatus: { type: String, enum: ['online', 'offline'], default: 'offline' },
+  referalPay: { type: Boolean, default: false },
 });
 UserSchema.pre("save", async function (next) {
   if (!this.isModified("password")||!this.password) return next();

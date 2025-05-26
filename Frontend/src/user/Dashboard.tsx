@@ -36,7 +36,13 @@ import { toast ,ToastContainer} from "react-toastify";
 import ApiService from "../Api/ApiService";
 import useAuth from "../hooks/useAuth";
 import ChangePassword from "../components/ChangePassword";
-
+import {
+  WhatsappShareButton,
+  FacebookShareButton,
+  WhatsappIcon,
+  FacebookIcon,
+} from "react-share";
+import { signUrl } from "../constant/Api";
 // Define TypeScript interfaces
 
 
@@ -45,8 +51,9 @@ const UserDashboard = () => {
   // User data with location
    const dispatch = useDispatch<AppDispatch>(); // Type-safe dispatch
    const Currentuser = useSelector((state: RootState) => state.authUser.user);
-console.log(Currentuser);
 
+const referralMessage = `Use my referral code ${Currentuser?.referralCode} to sign up on Sarathi!`;
+const shareUrl = signUrl
    const [user, setUser] = useState<Partial<IUser>>({
      name: Currentuser?.name,
      email: Currentuser?.email,
@@ -515,6 +522,7 @@ const handleSave = async () => {
                   border: "1px solid #eaecf0"
                 }}
               >
+     
                 <Box sx={{ mr: 2 }}>
                   <PhoneIcon color="primary" />
                 </Box>
@@ -531,30 +539,50 @@ const handleSave = async () => {
 
             {/* Referral Code field */}
             <Grid item xs={12} sm={6}>
-              <Paper 
-                elevation={0} 
-                sx={{ 
-                  p: 2.5, 
-                  borderRadius: 2, 
-                  display: "flex", 
-                  alignItems: "center",
-                  bgcolor: "#f9fafc",
-                  border: "1px solid #eaecf0"
-                }}
-              >
-                <Box sx={{ mr: 2 }}>
-                  <CardGiftcardIcon color="primary" />
-                </Box>
-                <Box>
-                  <Typography variant="caption" color="text.secondary" fontWeight="medium">
-                    Referral Code
-                  </Typography>
-                  <Typography variant="body1" fontWeight="medium">
-                    {Currentuser?.referralCode}
-                  </Typography>
-                </Box>
-              </Paper>
-            </Grid>
+  <Paper
+    elevation={0}
+    sx={{
+      p: 2.5,
+      borderRadius: 2,
+      bgcolor: "#f9fafc",
+      border: "1px solid #eaecf0",
+    }}
+  >
+    {/* Flex container: Left side referral info, right side share buttons */}
+    <Box
+      sx={{
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "center",
+      }}
+    >
+      {/* Referral Info */}
+      <Box sx={{ display: "flex", alignItems: "center" }}>
+        <CardGiftcardIcon color="primary" sx={{ mr: 1.5 }} />
+        <Box>
+          <Typography variant="caption" color="text.secondary" fontWeight="medium">
+            Referral Code
+          </Typography>
+          <Typography variant="body1" fontWeight="medium">
+            {Currentuser?.referralCode}
+          </Typography>
+        </Box>
+      </Box>
+
+      {/* Share Buttons */}
+      <Box sx={{ display: "flex", gap: 1 }}>
+        <WhatsappShareButton url={shareUrl} title={referralMessage}>
+          <WhatsappIcon size={32} round />
+        </WhatsappShareButton>
+        <FacebookShareButton url={shareUrl} hashtag="#SarathiReferral">
+          <FacebookIcon size={32} round />
+        </FacebookShareButton>
+      </Box>
+    </Box>
+  </Paper>
+</Grid>
+
+
           </Grid>
         </CardContent>
       </Card>

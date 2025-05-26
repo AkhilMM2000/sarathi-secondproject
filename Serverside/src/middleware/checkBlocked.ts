@@ -15,17 +15,16 @@ export class CheckBlockedUserOrDriver {
   async handle(req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> {
     try {
       const userId = req.user?.id;
-      const role = req.user?.role; // 'user' or 'driver'
+      const role = req.user?.role; 
      
-       
+      
       if (!userId || !role) {
         res.status(401).json({ message: "Unauthorized" });
         return 
+        
       }
    
 
-     
-      
       let userOrDriver;
       if (role === "user") {
         if (!isValidObjectId(userId)) {

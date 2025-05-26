@@ -19,9 +19,15 @@ export interface Driver {
     status: "pending" | "approved" | "rejected";
     isBlock: boolean; 
     role:"driver";
+    onlineStatus: 'online' | 'offline';
+    lastSeen: Date;
     activePayment?: boolean;
     stripeAccountId?: string;
     reason?: string; 
+     averageRating: number;
+     totalRatings: number;
+    totalRatingPoints: number;
     createdAt?: Date;
   }
+  
   

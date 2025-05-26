@@ -7,6 +7,8 @@ import PhoneIcon from '@mui/icons-material/Phone';
 import DirectionsCarIcon from '@mui/icons-material/DirectionsCar';
 import { useNearbyDrivers } from "../hooks/useNearbyDrivers";
 import { Link } from "react-router-dom";
+import { RootState } from "../store/ReduxStore";
+import { useSelector } from "react-redux";
 const DriverList = () => {
   const [search, setSearch] = useState("");
   const theme = useTheme();
@@ -117,7 +119,7 @@ const DriverList = () => {
                   
                   <Box sx={{ display: 'flex', justifyContent: 'center', mb: 1 }}>
                     <Rating 
-                      value={4.3}
+                      value={driver?.averageRating||0}
                       precision={0.1} 
                       readOnly 
                       size="small"

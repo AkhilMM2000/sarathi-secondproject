@@ -89,9 +89,9 @@ const OTPVerification = () => {
         setError("Invalid OTP. Please try again.");
       }
     }
-  } catch (error: unknown) {
+  } catch (error: any) {
     let errorMessage = "An unexpected error occurred.";
-
+      console.log(error)
     if (axios.isAxiosError(error)) {
       errorMessage = error.response?.data?.error || "Server error occurred.";
     } else if (error instanceof Error) {

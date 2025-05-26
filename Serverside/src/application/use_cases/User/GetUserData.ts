@@ -12,10 +12,10 @@ export class GetUserData {
     if (!userId) {
       throw new AuthError("User ID is required", 400);
     }
-
+console.log(userId);
     const user = await this.userRepository.getUserById(userId);
     if (!user) {
-      throw new AuthError("User not found", 404);
+      throw new AuthError("User not founde", 404);
     }
 
     return user;

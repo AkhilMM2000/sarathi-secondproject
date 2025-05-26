@@ -23,8 +23,7 @@ export class PaymentService  implements IStripeService {
     try {
      
       const account =await this.stripe.accounts.retrieve(driverStripeAccountId);
-      console.log(account.capabilities?.transfers);
-  
+     
       const paymentIntent = await this.stripe.paymentIntents.create(
         {
           amount, 
@@ -52,4 +51,41 @@ export class PaymentService  implements IStripeService {
   async retrievePaymentIntent(paymentIntentId: string): Promise<Stripe.PaymentIntent> {
     return this.stripe.paymentIntents.retrieve(paymentIntentId);
   }
+
+
+async transferToDriverFromWallet(
+  rideId: string,
+  amount: number, // in rupees
+  driverStripeAccountId: string
+): Promise<Stripe.Transfer> {
+  try {
+    // Convert to paisa
+    const transferAmount = Math.floor(0.9 * amount * 100);
+
+    // Retrieve current platform balance
+    const balance = await this.stripe.balance.retrieve();
+    console.log(balance, 'balance');
+    const usdBalance = balance.pending.find(b => b.currency === 'usd')?.amount || 0;
+    console.log(usdBalance, 'usdBalance');
+  const inrBalance =Math.floor(usdBalance * 85.62) 
+    if (inrBalance < transferAmount) {
+      throw new AuthError('Insufficient platform balance to transfer funds to driver.', 400);
+    }
+
+    // Perform the transfer
+    const transfer = await this.stripe.transfers.create({
+      amount: transferAmount,
+      currency: 'inr',
+      destination: driverStripeAccountId,
+      transfer_group: rideId,
+    });
+
+    return transfer;
+  } catch (err: any) {
+    console.error('Stripe Wallet Transfer Error:', err.message);
+    throw new AuthError(`${err.message}`, 500);
+  }
+}
+
+
 }

@@ -14,6 +14,9 @@ export interface IUser{
     longitude: number;
   };
   profile:string
+  referalPay:boolean
+  onlineStatus: 'online' | 'offline';
+  lastSeen: Date;
 }
 
   export type UserRole = "user" | "driver" | "admin";
@@ -47,11 +50,15 @@ export interface IUser{
     licenseImage: string;
     status: "pending" | "approved" | "rejected"
     isBlock: boolean;
-    
+    onlineStatus: 'online' | 'offline';
+  lastSeen: Date;
 stripeAccountId?:string
 activePayment?:boolean
     reason?:string
     role: "driver";
+    averageRating?: number;
+     totalRatings?: number;
+    totalRatingPoints?: number;
   }
   export interface IVehicle {
     _id: string;
@@ -64,4 +71,32 @@ activePayment?:boolean
     vehicleType: string;
     polution_expire: string; // ISO date string
   }
-  
+  //type for video call 
+  export type CallerInfo = {
+  fromId: string;
+  callerName: string;
+  role: "user" | "driver";
+};
+
+export interface RideHistory {
+  fromLocation: string;
+  toLocation: string;
+  startDate: string;
+  estimatedKm: number;
+  estimatedFare: number;
+  status: "CANCELLED" | "REJECTED";
+  paymentStatus: "COMPLETED";
+  bookingType: "RANGE_OF_DATES" | "ONE_RIDE";
+  paymentMode: "stripe";
+  createdAt: string;
+  updatedAt: string;
+  finalFare: number;
+  paymentIntentId: string;
+  driver_fee: number;
+  platform_fee: number;
+  reason?:string
+  email: string;
+  place: string;
+  name: string;
+  profile: string;
+}

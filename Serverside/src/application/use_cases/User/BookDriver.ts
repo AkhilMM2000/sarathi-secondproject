@@ -4,6 +4,7 @@ import { BookingStatus,Booking, BookingType } from "../../../domain/models/Booki
 import { IFareCalculatorService } from "../../services/FareCalculatorService"; 
 import { Types } from "mongoose";
 import { AuthError } from "../../../domain/errors/Autherror";
+import { INotificationService } from "../../services/NotificationService";
 
 export interface BookDriverInput {
   userId: string;
@@ -20,7 +21,9 @@ export interface BookDriverInput {
 export class BookDriver {
   constructor(
     @inject("IBookingRepository") private bookingRepo: IBookingRepository,
-    @inject("IFareCalculatorService") private fareCalculator: IFareCalculatorService
+    @inject("IFareCalculatorService") private fareCalculator: IFareCalculatorService,
+    @inject("INotificationService")
+    private notificationService: INotificationService
   ) {}
 
   async execute(data: BookDriverInput): Promise<Booking> {
@@ -63,6 +66,7 @@ if(endDate && startDate > endDate) {
    
     // Step 4: Save booking
     const savedBooking = await this.bookingRepo.createBooking(newBooking);
+    this.notificationService.sendBookingNotification(driverId,{startDate,newRide:savedBooking});
     return savedBooking;
   }
 }

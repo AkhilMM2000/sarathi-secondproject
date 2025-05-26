@@ -5,6 +5,7 @@ import { IStripeService } from '../../../domain/services/IStripeService';
 import { am } from '@upstash/redis/zmscore-BdNsMd17';
 import { IDriverRepository } from '../../../domain/repositories/IDriverepository';
 import { AuthError } from '../../../domain/errors/Autherror';
+import { HTTP_STATUS_CODES } from '../../../constants/HttpStatusCode';
 
 interface CreatePaymentIntentRequest {
   amount: number;
@@ -29,10 +30,11 @@ console.log(driver,'driver')
 console.log(driver?.stripeAccountId)
 if(driver){
   if(!driver.stripeAccountId){
-    throw new AuthError("Driver not found or not onboarded",  404);
+    throw new AuthError("Driver not found or not onboarded",  HTTP_STATUS_CODES.NOT_FOUND);
   }
   
 }
+
     return await this.stripeService.createPaymentIntent({
       amount,
       driverStripeAccountId: driver?.stripeAccountId || '',

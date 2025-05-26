@@ -22,6 +22,17 @@ import { IStripeAccountService } from "../../application/services/Accountservice
 import { StripeService } from "../services/Accountservice";
 import { IStripeService } from "../../domain/services/IStripeService";
 import { PaymentService } from "../services/StripeService";
+import { IChatRepository } from "../../domain/repositories/IChatRepository";
+import { MongoChatRepository } from "../database/ChatRepository";
+import { ChatService } from "../../application/services/chatService";
+import { IWalletRepository } from "../../domain/repositories/IWalletRepository";
+import { MongoWalletRepository } from "../database/WalletRepository";
+import { WalletService } from "../../application/services/WalletService";
+import { ReferralCodeService } from "../../application/services/ReferralCodeService";
+import { INotificationService } from "../../application/services/NotificationService";
+import { SocketNotificationService } from "../services/SocketNotification";
+import { IDriverReviewRepository } from "../../domain/repositories/IDriverReviewRepository";
+import { MongoDriverReviewRepository } from "../database/MongoDriverReviewRepository";
 
 // Register repositories
 container.register<IUserRepository>("IUserRepository", { useClass: MongoUserRepository });
@@ -31,6 +42,11 @@ container.register<IBookingRepository>("IBookingRepository",{ useClass: MongoBoo
 // Register services
 container.register<HashService>("HashService", { useClass: HashService });
 container.register<EmailService>("EmailService", { useClass: EmailService });
+container.register<WalletService >("WalletService", { useClass: WalletService });
+container.register("ReferralCodeService", {
+  useClass: ReferralCodeService,
+});
+
 
 container.registerSingleton<IFileStorageService>("IFileStorageService",  CloudinaryFileStorageService)
 
@@ -40,8 +56,6 @@ container.registerSingleton<IRedisrepository>(
   );
   container.registerSingleton<GoogleDistanceService>("GoogleDistanceService", GoogleDistanceService);
   container.register<SMSService>("SMSService", { useClass: TwilioSMSService });
-
-  
 
 
   container.register<IFareCalculatorService>("IFareCalculatorService", {
@@ -54,3 +68,22 @@ container.registerSingleton<IRedisrepository>(
   container.register<IStripeService>('StripePaymentService', {
     useClass:PaymentService
   });
+  container.register<IChatRepository>("IChatRepository", {
+    useClass: MongoChatRepository,
+  });
+  container.registerSingleton<ChatService>(ChatService);
+
+  //wallet service
+  container.register<IWalletRepository>("IWalletRepository", {
+    useClass: MongoWalletRepository,  
+  });
+
+  container.register<INotificationService>("INotificationService", {
+    useClass: SocketNotificationService,
+  });
+
+  //user rate Driver
+  container.registerSingleton<IDriverReviewRepository>(
+  'DriverReviewRepository',
+  MongoDriverReviewRepository
+);

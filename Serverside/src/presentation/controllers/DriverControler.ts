@@ -12,8 +12,10 @@ import { EditDriverProfile } from "../../application/use_cases/Driver/EditDriver
 import { AuthenticatedRequest } from "../../middleware/authMiddleware";
 import { OnboardDriverUseCase } from "../../application/use_cases/Driver/DriverOnboarding";
 import { GetUserBookings } from "../../application/use_cases/Driver/Getdriverbooking";
-import { BookingWithUsername, PaginatedResult } from "../../domain/repositories/IBookingrepository";
+import { BookingWithUsername, PaginatedResult, rideHistory } from "../../domain/repositories/IBookingrepository";
 import { VerifyDriverPaymentAccount } from "../../application/use_cases/Driver/VerifyAccountStatus";
+import { GetUserData } from "../../application/use_cases/User/GetUserData";
+import { ERROR_MESSAGES } from "../../constants/ErrorMessages";
 
 export class DriverController {
   static async registerDriver(req: Request, res: Response) {
@@ -105,6 +107,32 @@ export class DriverController {
       }
     }
   }
+static async getUserById(req: Request, res: Response) {
+    try {
+      const userId = req.params.id; 
+console.log(' useridfor chat',userId)
+      if (!userId) {
+        res.status(400).json({ success: false, error: "User ID is required" });
+        return
+      }
+     
+      
+      const getUserData = container.resolve(GetUserData);
+      const user = await getUserData.execute(userId);
+
+
+      res.status(200).json({ success: true, user });
+    } catch (error) {
+      if (error instanceof AuthError) {
+        res.status(error.statusCode).json({ success: false, error: error.message });
+        return
+      }
+
+      console.error("Error fetching user data:", error);
+      res.status(500).json({ success: false, error: "Internal server error" });
+    }
+  }
+
   static async editDriverProfile(req: Request, res: Response) {
     try {
       const driverId = req.params.id; 
@@ -157,7 +185,7 @@ if(!driverId){
   static async getBookingsForDriver(req: AuthenticatedRequest, res: Response){
    const driverId=req.user?.id;
    if(!driverId){
-    res.status(400).json({ message: "Driver ID is required" });
+    res.status(400).json({ message: ERROR_MESSAGES.DRIVER_ID_NOT_FOUND });
     return 
    }
     const { page = 1, limit = 2 } = req.query;
@@ -165,7 +193,7 @@ if(!driverId){
     try {
       const getUserBookings = container.resolve(GetUserBookings);
 
-      const paginatedBookings: PaginatedResult<BookingWithUsername> =
+      const paginatedBookings: PaginatedResult<rideHistory> =
         await getUserBookings.execute(driverId, Number(page), Number(limit));
 
       res.status(200).json({

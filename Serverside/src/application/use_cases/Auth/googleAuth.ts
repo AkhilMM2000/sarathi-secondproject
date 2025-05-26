@@ -49,7 +49,8 @@ export class GoogleAuthUseCase {
               profile: "default-profile.png", // Default profile image
               role: "user",
               isBlock:false,
-              
+               lastSeen: new Date(),
+              onlineStatus: "offline",
              
           });
           

@@ -5,10 +5,11 @@ import {
 } from '@stripe/react-stripe-js';
 import { useState } from 'react';
 import { CheckCircle, AlertCircle } from 'lucide-react';
+import { Ride } from '../user/BookRides';
 
 interface PaymentFormProps {
-  onPaymentSuccess: (status: string, paymentId: string) => void;
-  onPaymentFailure?: (status: string) => void;
+  onPaymentSuccess: (status: Ride['paymentStatus'], paymentId: string) => void;
+  onPaymentFailure?: (status: Ride['paymentStatus']) => void;
 }
 
 const PaymentForm: React.FC<PaymentFormProps> = ({ onPaymentSuccess, onPaymentFailure }) => {
@@ -39,8 +40,9 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ onPaymentSuccess, onPaymentFa
     }
 
     setIsProcessing(false);
+       
   };
-
+     
   return (
     <div className="w-full max-w-md mx-auto">
       <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg shadow-lg overflow-hidden">

@@ -89,4 +89,20 @@ async updateStripeAccount(driverId: string, stripeAccountId: string): Promise<Dr
     throw new AuthError('Failed to update Stripe account', 500);
   }
 }
+
+
+async updateRatingStats(driverId: string, stats: {
+  totalRatingPoints: number;
+  totalRatings: number;
+  averageRating: number;
+}): Promise<void> {
+  await DriverModel.findByIdAndUpdate(driverId, {
+    $set: {
+      totalRatingPoints: stats.totalRatingPoints,
+      totalRatings: stats.totalRatings,
+      averageRating: stats.averageRating,
+    },
+  });
+}
+
 }

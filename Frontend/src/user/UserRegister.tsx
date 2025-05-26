@@ -20,8 +20,10 @@ const RegisterUser = () => {
       const nameRegex = /^[A-Za-z\s]{3,}$/;
       const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
       const mobileRegex = /^[6-9]\d{9}$/; // Ensures starts with 6-9 and 10 digits
-      const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{6,}$/;
-      const referralRegex = /^[A-Za-z0-9]*$/; // Alphanumeric, optional
+     
+      const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+
+      
     
       if (!nameRegex.test(formData.name)) {
         toast.error("Invalid name! Must be at least 3 letters.", { position: "top-center" });
@@ -36,13 +38,14 @@ const RegisterUser = () => {
         return false;
       }
       if (!passwordRegex.test(formData.password)) {
-        toast.error("Weak password! Min 6 chars, include letters & numbers.", { position: "top-center" });
+        toast.error(
+          "Password must be at least 8 characters long and include uppercase, lowercase, number, and special character.",
+          { position: "top-center" }
+        );
         return false;
       }
-      if (formData.referralCode && !referralRegex.test(formData.referralCode)) {
-        toast.error("Referral code must be alphanumeric.", { position: "top-center" });
-        return false;
-      }
+      
+      
     
       return true;
     };
@@ -65,12 +68,14 @@ const RegisterUser = () => {
         localStorage.setItem("email", formData.email);
         navigate("/otp-verification?role=users");
       } catch (error: any) {
-        toast.error(error, { position: "top-center", autoClose: 2000 });
+         console.log(error)
+toast.dismiss()
+        toast.error(`${error} please change it`  ,{ position: "top-center", autoClose: 2000 });
+        
       } finally {
         setLoading(false);
       }
     };
-
 
   return (
     <div className="flex justify-center items-center min-h-screen w-full bg-gradient-to-r from-blue-700 to-blue-300 p-4">

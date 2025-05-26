@@ -2,6 +2,8 @@ import { IVehicleRepository } from "../../domain/repositories/IVehicleRepository
 import { Vehicle } from "../../domain/models/Vehicle";
 import { inject, injectable } from "tsyringe";
 import { AuthError } from "../../domain/errors/Autherror";
+import { H } from "@upstash/redis/zmscore-BdNsMd17";
+import { HTTP_STATUS_CODES } from "../../constants/HttpStatusCode";
 
 @injectable()
 export class EditVehicle {
@@ -11,12 +13,12 @@ export class EditVehicle {
 
   async execute(vehicleId: string, updateData: Partial<Vehicle>): Promise<Vehicle|null> {
     if (!vehicleId) {
-        throw new AuthError("Vehicle ID is required", 400); 
+        throw new AuthError("Vehicle ID is required", HTTP_STATUS_CODES.BAD_REQUEST); 
       }
     
     const updatedVehicle = await this.vehicleRepository.editVehicle(vehicleId, updateData);
     if (!updatedVehicle) {
-        throw new AuthError("Vehicle not found or update failed", 404); 
+        throw new AuthError("Vehicle not found or update failed", HTTP_STATUS_CODES.NOT_FOUND); 
       }
 
     return updatedVehicle;

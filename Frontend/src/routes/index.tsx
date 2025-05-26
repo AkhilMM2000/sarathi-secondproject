@@ -19,8 +19,16 @@ import DriverList from "../components/ListDrivers";
 import DriverListedPage from "../user/DriverListedPage";
 import BookDriver from "../user/BookDriver";
 import BookRides from "../user/BookRides";
+import UserWallet from "../user/userWallet";
 
+import VideoCallPage from "../components/VideoCall";
+import { RideHistoryPage } from "../components/RideHistoryPage";
+import { useSelector } from "react-redux";
+import { RootState } from "../store/ReduxStore";
+import PdfFilePreview from "../components/previewpdf";
 const AppRoutes = () => {
+ const Currentuser = useSelector((state: RootState) => state.authUser.user);
+
   return (
     
     
@@ -46,6 +54,11 @@ const AppRoutes = () => {
           <Route path="dashboard" element={< Dashboards  />} />
           <Route path="vehicle" element={< Vehicle  />} />
           <Route path="rides" element={< BookRides/>} />
+          <Route path="wallet" element={<UserWallet />} />
+       
+          <Route path="call" element ={<VideoCallPage role="user" />}/>
+          <Route path="pdf" element={<PdfFilePreview />}/>
+          <Route path="ridehistory" element={<RideHistoryPage role="user" userId={Currentuser?._id!}/> }/>
         </Route>
       </Routes>
     

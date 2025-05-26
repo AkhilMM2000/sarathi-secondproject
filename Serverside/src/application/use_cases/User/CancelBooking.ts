@@ -2,6 +2,7 @@ import { inject, injectable } from "tsyringe";
 import { IBookingRepository } from "../../../domain/repositories/IBookingrepository"; 
 import { BookingStatus } from "../../../domain/models/Booking";
 import { AuthError } from "../../../domain/errors/Autherror";
+import { INotificationService } from "../../services/NotificationService";
 
 interface CancelBookingInput {
   bookingId: string;
@@ -12,6 +13,8 @@ interface CancelBookingInput {
 @injectable()
 export class CancelBookingInputUseCase {
   constructor(
+     @inject("INotificationService")
+        private notificationService: INotificationService,
     @inject("IBookingRepository")
     private bookingRepo: IBookingRepository
   ) {}
@@ -28,5 +31,6 @@ export class CancelBookingInputUseCase {
       status,
       reason
     });
+    this.notificationService.cancelBookingNotification(booking.driverId.toString(),{status,reason,startDate:booking.startDate,bookingId})
   }
 }

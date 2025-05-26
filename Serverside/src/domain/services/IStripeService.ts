@@ -13,5 +13,11 @@ export interface CreatePaymentIntentParams {
     }>
   
   retrievePaymentIntent(paymentIntentId: string): Promise<Stripe.PaymentIntent>;
+  transferToDriverFromWallet(
+  rideId: string,
+  amount: number,
+  driverStripeAccountId: string
+): Promise<Stripe.Transfer>;
+
   }
   

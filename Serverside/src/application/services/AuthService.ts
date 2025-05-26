@@ -1,4 +1,4 @@
-import jwt from "jsonwebtoken";
+import jwt, { JwtPayload } from "jsonwebtoken";
 
 export class AuthService {
   static generateAccessToken(payload: object): string {
@@ -7,5 +7,17 @@ export class AuthService {
 
   static generateRefreshToken(payload: object): string {
     return jwt.sign(payload, process.env.REFRESH_TOKEN_SECRET as string, { expiresIn: "7d" });
+  }
+  static verifyToken(token: string, type: "access" | "refresh"): JwtPayload | null {
+    try {
+      const secret =
+        type === "access"
+          ? (process.env.ACCESS_TOKEN_SECRET as string)
+          : (process.env.REFRESH_TOKEN_SECRET as string);
+
+      return jwt.verify(token, secret) as JwtPayload;
+    } catch (error) {
+      return null;
+    }
   }
 }

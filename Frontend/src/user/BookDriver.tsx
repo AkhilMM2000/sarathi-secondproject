@@ -13,6 +13,7 @@ import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import FareEstimateModal from "../components/FareEstimateModal";
 import { UserAPI } from "../Api/AxiosInterceptor";
+import ViewReviewsModal from "../components/ViewReviewsModal";
 interface BookingData {
   from: string;
   to: string;
@@ -31,6 +32,7 @@ const [isRangeMode, setIsRangeMode] = useState<boolean>(false);
   const [startDate, setStartDate] = useState<Dayjs | null>(null);
   const [endDate, setEndDate] = useState<Dayjs | null>(null);
   const [daysInRange, setDaysInRange] = useState<number>(0);
+  const [openReviewModal, setOpenReviewModal] = useState(false);
   const navigate=useNavigate()
   const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: 'success' | 'error' | 'info' | 'warning' }>({ open: false, message: "", severity: "success" });
   const handleCloseSnackbar = () => {
@@ -199,12 +201,19 @@ console.log('endate',endDate?.toDate())
                 <div className="sm:ml-4 flex-1">
                   <Typography variant="subtitle1" className="font-medium">{driverData[0]?.mobile}</Typography>
                   <div className="flex items-center">
-                    <Rating value={driverData[0]?.distance} precision={0.1} size="small" readOnly />
+                    <Rating value={driverData[0]?.averageRating} precision={0.1} size="small" readOnly />
                     <Typography variant="body2" className="ml-2">{driverData[0]?.email}</Typography>
                   </div>
                   <Typography variant="body2" color="text.secondary">{driverData[0]?.place}</Typography>
                   <div className="mt-1 text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full inline-block">
-                 
+          <Button
+    variant="outlined"
+    size="small"
+    onClick={() => setOpenReviewModal(true)}
+    sx={{ mt: 1, borderRadius: '9999px', textTransform: 'none' }}
+  >
+    View Reviews
+  </Button>
                   </div>
                 </div>
 
@@ -350,7 +359,14 @@ console.log('endate',endDate?.toDate())
 
   </LocalizationProvider>
 </Paper>
-    
+     {driverData[0]._id && (
+        <ViewReviewsModal
+        role="user"
+          open={openReviewModal}
+          onClose={() => setOpenReviewModal(false)}
+          driverId={driverData[0]._id }
+        />
+      )}
     {/* Book Now Button */}
     <div className="flex justify-center">
     <Button 

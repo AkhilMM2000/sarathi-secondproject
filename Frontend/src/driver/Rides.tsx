@@ -10,9 +10,16 @@ import {
   Button,
   Modal,
   TextField,
+  IconButton,
+  Avatar,
+  Paper,
+  Snackbar,
+  Alert,
   
 
 } from "@mui/material";
+import ChatIcon from "@mui/icons-material/Chat";
+import VideoCallIcon from "@mui/icons-material/VideoCall";
 
 import EnhancedAlerts from "../components/Alert";
 
@@ -32,7 +39,15 @@ import { DriverAPI } from "../Api/AxiosInterceptor";
 import EnhancedPagination from "../components/Adwancepagination";
 import Rides from "../user/BookRides";
 import moment from "moment";
-
+import ChatModal from "../components/chat";
+import { CreatesocketConnection } from "../constant/socket";
+import { useCallRequest } from "../hooks/useCallRequest";
+import { useSelector } from "react-redux";
+import { RootState } from "../store/ReduxStore";
+interface User {
+  _id: string;  
+  name: string;
+}
 interface Booking {
   _id: string;
   fromLocation?: string;
@@ -42,11 +57,15 @@ interface Booking {
   estimatedKm: number;
   estimatedFare: number;
  reason?:string
-  status: "PENDING" | "CONFIRMED" | "CANCELLED" | "COMPLETED" | "REJECTED";
-  paymentStatus: "PENDING" | "COMPLETED" | "FAILED";
+  status: "PENDING" | "CONFIRMED"  | "COMPLETED" 
+  paymentStatus: "PENDING" | "FAILED";
   bookingType: string;
-  username: string;
-  
+  name: string;
+  place:string,
+  email:string,
+  profile:string,
+  mobile:string
+  userId?:User
 finalFare:number
 }
 
@@ -63,11 +82,16 @@ const DriverBookings: React.FC = () => {
   const [success, setSuccess] = useState(false);
   const [refresh, setRefresh] = useState(false);
   const [finalKm, setFinalKm] = useState<string>('');
-
+  const [openChat, setOpenChat] = useState(false);
+  const [chatRideId, setChatRideId] = useState<string | null>(null);
+  const [recieverId, setRecieverId] = useState<string>('');
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
   const fetchBookings = async (currentPage: number) => {
     try {
       setLoading(true);
       const response = await DriverAPI.get(`/bookings?page=${currentPage}&limit=2`);
+    console.log(response.data.data,'driver side ride')
       setBookings(response.data.data);
       setTotalPages(response.data.totalPages);
       setLoading(false);
@@ -81,7 +105,121 @@ const DriverBookings: React.FC = () => {
     fetchBookings(page);
   }, [page,refresh]);
 
+//video call management start here
+ const authdriver = useSelector(
+    (state: RootState) => state.driverStore.driver
+  );
+
+const { initiateCall, calling, callAlert, setCallAlert } = useCallRequest();
+
+const handleCall = (
+  fromId: string,
+  toId: string,
+  callerName: string,
+  role: "user" | "driver"
+) => {
+ 
+  initiateCall({fromId,toId,callerName,role,})
+
+};
+
+
+
+
+
   
+  useEffect(() => {
+    const socket=CreatesocketConnection()
+    socket.on("cancel:booking", ({ status,reason,startDate,bookingId}) => {
+      console.log(reason,bookingId,'in the driver ride page')
+      setBookings((prevBookings) =>
+        prevBookings.map((booking) =>
+          booking._id === bookingId
+            ? {
+                ...booking,
+                status,
+                reason
+
+                
+              }
+            : booking
+        )
+      );
+     
+    });
+  socket.on("walletRidepaymentSuccess", (data) => {
+    console.log("Wallet payment success:", data.rideId);
+ setBookings((prevBookings) =>
+    prevBookings.filter((booking) =>
+      booking._id !== data.rideId
+      
+    )
+  );
+      setSnackbarMessage("your payment i received successfully");
+      setSnackbarOpen(true);
+  });
+socket.on("cancelbookingSuccess", ({ message, rideId }) => {
+  console.log(message, rideId);
+ 
+    
+  setBookings((prevBookings) =>
+    prevBookings.filter((booking) =>
+      booking._id !== rideId
+      
+    )
+  );
+   setSnackbarMessage("your ride is cancelled");
+      setSnackbarOpen(true);
+});
+socket.on("ridePaymentSuccessAck", ({ message, rideId }) => {
+
+  setBookings((prevBookings) =>
+    prevBookings.filter((booking) =>
+      booking._id !== rideId
+      
+    )
+  );
+setSnackbarMessage( message);
+      setSnackbarOpen(true);
+});
+
+    
+
+
+socket.on('payment:status',({status,startDate,bookingId})=>{
+  console.log(bookingId,'bookingid in ride.tsx')
+  
+  setBookings((prevBookings) =>
+    prevBookings.filter((booking) =>
+      booking._id !== bookingId
+      
+    )
+  );
+ 
+  
+
+ })
+ const handleNewBooking = ({ newRide }: { newRide: Booking }) => {
+  console.log('Received newRide:', newRide);
+  setBookings((prev) => [newRide, ...prev].slice(0, 2)); // Add new ride at the top, limit to 2
+};
+
+socket.on('booking:new', handleNewBooking);
+
+
+    return () => {
+     
+      socket.off('booking:new', handleNewBooking); // clean up
+       socket.off("cancel:booking");
+    socket.off("walletRidepaymentSuccess");
+    socket.off("cancelbookingSuccess");
+    socket.off("ridePaymentSuccessAck");
+    socket.off("payment:status");
+    
+    };
+  }, []);
+
+
 
   const handleOpen = (id:string,type: 'CONFIRMED' | 'REJECTED'|'COMPLETED') => {
     setActionType(type);
@@ -134,6 +272,31 @@ const DriverBookings: React.FC = () => {
       </Box>
     );
   }
+  
+  if (bookings.length === 0) {
+    return (
+      <Box
+        display="flex"
+        flexDirection="column"
+        alignItems="center"
+        justifyContent="center"
+        height="60vh"
+        textAlign="center"
+      >
+        <Box mb={2}>
+          <img
+            src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 150'%3E%3Cpath d='M50 100h100l10-20H40z' fill='%23ddd'/%3E%3Ccircle cx='65' cy='110' r='8' fill='%23333'/%3E%3Ccircle cx='135' cy='110' r='8' fill='%23333'/%3E%3C/svg%3E"
+    alt="No rides"
+    width={180}
+          />
+        </Box>
+        <Typography variant="h6" gutterBottom>
+          You don't have a current ride now
+        </Typography>
+       
+      </Box>
+    );
+  }
 
   if (error) {
     return (
@@ -158,70 +321,170 @@ const DriverBookings: React.FC = () => {
       <Typography variant="h4" gutterBottom>
         My Bookings
       </Typography>
-      <Grid container spacing={3}>
-        {bookings.map((booking, index) => (
-          <Grid item xs={12} md={6} key={booking._id}>
-            <Card sx={{ backgroundColor: index % 2 === 0 ? "#f9f9f9" : "#e0f7fa" }}>
-              <CardContent>
-              <Typography variant="h6">BookedUser:{booking.username}</Typography>
-              {booking.fromLocation && (
-  <Typography variant="h6">From: {booking.fromLocation}</Typography>
-)}
-{booking.toLocation && (
-  <Typography variant="h6">To: {booking.toLocation}</Typography>
-)}
-  
-                <Typography variant="body1">Start:  {moment(booking.startDate).format("DD MMMM YYYY")}</Typography>
-                {booking.endDate && (
-                  <Typography variant="body1">End:  {moment(booking.startDate).format("DD MMMM YYYY")}</Typography>
+       <Grid container spacing={4}>
+      {bookings.slice(0, 2).map((booking, index) => (
+        <Grid item xs={12} md={6} key={booking._id}>
+          <Card
+            sx={{
+              backgroundColor: index % 2 === 0 ? "#f9f9f9" : "#e0f7fa",
+              borderRadius: 3,
+              boxShadow: 3,
+            }}
+          >
+            <CardContent>
+              {/* USER DETAILS */}
+              <Paper elevation={3} sx={{ p: 2, borderRadius: 2, mb: 3 }}>
+                <Typography
+                  variant="h6"
+                  gutterBottom
+                  sx={{ fontWeight: 600, color: "#333" }}
+                >
+                  User Details
+                </Typography>
+
+                <Grid container spacing={2} alignItems="center">
+                  <Grid item xs={12} sm={4}>
+                    <Avatar
+                      src={`${import.meta.env.VITE_IMAGEURL}${booking.profile}`}
+                      alt={booking.name}
+                      sx={{ width: 80, height: 80 }}
+                    />
+                  </Grid>
+
+                  <Grid item xs={12} sm={8}>
+                    <Typography variant="body1">
+                      <strong>Name:</strong> {booking.name}
+                    </Typography>
+                    <Typography variant="body1">
+                      <strong>Email:</strong> {booking.email}
+                    </Typography>
+                    <Typography variant="body1">
+                      <strong>Mobile:</strong> {booking.mobile || "Not Provided"}
+                    </Typography>
+                    <Typography variant="body1">
+                      <strong>Location:</strong> {booking.place}
+                    </Typography>
+                  </Grid>
+                </Grid>
+              </Paper>
+
+              {/* RIDE DETAILS */}
+              <Box mb={2}>
+                {booking.fromLocation && (
+                  <Typography variant="body1">
+                    <strong>From:</strong> {booking.fromLocation}
+                  </Typography>
                 )}
-                <Typography variant="body1">User: {booking.username}</Typography>
-                {booking.finalFare ? (
-  <Typography variant="body1">Final Fare: ₹{booking.finalFare}</Typography>
-) : (
-  <Typography variant="body1">Estimated Fare: ₹{booking.estimatedFare}</Typography>
-)}
+                {booking.toLocation && (
+                  <Typography variant="body1">
+                    <strong>To:</strong> {booking.toLocation}
+                  </Typography>
+                )}
+                <Typography variant="body1">
+                  <strong>Start:</strong>{" "}
+                  {moment(booking.startDate).format("DD MMMM YYYY")}
+                </Typography>
+                {booking.endDate && (
+                  <Typography variant="body1">
+                    <strong>End:</strong>{" "}
+                    {moment(booking.endDate).format("DD MMMM YYYY")}
+                  </Typography>
+                )}
+                <Typography variant="body1">
+                  <strong>
+                    {booking.finalFare ? "Final Fare" : "Estimated Fare"}:
+                  </strong>{" "}
+                  ₹{booking.finalFare || booking.estimatedFare}
+                </Typography>
+                <Typography variant="body1">
+                  <strong>Payment Status:</strong> {booking.paymentStatus}
+                </Typography>
+              </Box>
 
-                <Typography>Status: {booking.status}</Typography>
-                {booking.status === "CANCELLED" && booking.reason && (
-  <Typography>Cancel reason: {booking.reason}</Typography>
-)}
+              {/* ACTION BUTTONS */}
+              {booking.status === "PENDING" && (
+                <Box display="flex" gap={2} mb={2}>
+                  <Button
+                    variant="contained"
+                    color="success"
+                    onClick={() => handleOpen(booking._id, "CONFIRMED")}
+                  >
+                    Accept
+                  </Button>
+                  <Button
+                    variant="outlined"
+                    color="error"
+                    onClick={() => handleOpen(booking._id, "REJECTED")}
+                  >
+                    Reject
+                  </Button>
+                </Box>
+              )}
+              {booking.status === "CONFIRMED" && (
+                <Box mb={2}>
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    onClick={() => handleOpen(booking._id, "COMPLETED")}
+                  >
+                    Complete Ride
+                  </Button>
+                </Box>
+              )}
 
-                {booking.status=== "PENDING" && (
-  <Box mt={2} display="flex" gap={2}>
-    <Button
-      variant="contained"
-      color="success"
-      onClick={() => handleOpen(booking._id,'CONFIRMED')}
-    >
-      Accept
-    </Button>
-    <Button
-      variant="outlined"
-      color="error"
-      onClick={() => handleOpen(booking._id,'REJECTED')}
-    >
-      Reject
-    </Button>
-  </Box>
-)}
-{booking.status === "CONFIRMED" && (
-  <Box mt={2}>
-    <Button
-      variant="contained"
-      color="primary"
-      onClick={() => handleOpen(booking._id, 'COMPLETED')}
-    >
-      Complete Ride
-    </Button>
-  </Box>
-)}
-                <Typography>Payment: {booking.paymentStatus}</Typography>
-              </CardContent>
-            </Card>
-          </Grid>
-        ))}
-      </Grid>
+              {/* CHAT AND VIDEO CALL ICONS */}
+              <Box display="flex" alignItems="center" gap={2}>
+                <IconButton
+                  color="primary"
+                  aria-label="chat with user"
+                  onClick={() => {
+                    setChatRideId(booking._id);
+                    setRecieverId(booking.userId?._id || "");
+                    setOpenChat(true);
+                  }}
+                  sx={{
+                    bgcolor: "rgba(25, 118, 210, 0.1)",
+                    "&:hover": {
+                      bgcolor: "rgba(25, 118, 210, 0.2)",
+                    },
+                    height: 40,
+                    width: 40,
+                  }}
+                >
+                  <ChatIcon />
+                </IconButton>
+
+                <IconButton
+                  disabled={calling}
+                  color="secondary"
+                  aria-label="video call"
+                  onClick={() =>
+                    handleCall(
+                      authdriver?._id || "",
+                      typeof booking.userId === "object"
+                        ? booking.userId._id
+                        : "",
+                      authdriver?.name || "Driver",
+                      "driver"
+                    )
+                  }
+                  sx={{
+                    bgcolor: "rgba(156, 39, 176, 0.1)",
+                    "&:hover": {
+                      bgcolor: "rgba(156, 39, 176, 0.2)",
+                    },
+                    height: 40,
+                    width: 40,
+                  }}
+                >
+                  <VideoCallIcon />
+                </IconButton>
+              </Box>
+            </CardContent>
+          </Card>
+        </Grid>
+      ))}
+    </Grid>
       <Box display="flex" justifyContent="center" mt={4}>
        <EnhancedPagination 
        count={totalPages} 
@@ -231,9 +494,43 @@ const DriverBookings: React.FC = () => {
       />
     </Box>
 
-   
-    
-
+{callAlert && (
+  <Snackbar
+    open={!!callAlert}
+    autoHideDuration={4000}
+    onClose={() => setCallAlert(null)}
+      anchorOrigin={{ vertical: "top", horizontal: "center" }}
+  >
+    <Alert onClose={() => setCallAlert(null)} severity={callAlert.severity} variant="filled">
+      {callAlert.message}
+    </Alert>
+  </Snackbar>
+)}
+    <ChatModal open={openChat}
+ recieverId={recieverId}
+  onClose={() => {
+    setOpenChat(false);        
+    setChatRideId(null); 
+    setRecieverId('');   
+  }}
+  senderType="driver"
+  roomId={chatRideId}
+  />
+  <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={7000}
+        onClose={() => setSnackbarOpen(false)}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+      >
+        <Alert
+          onClose={() => setSnackbarOpen(false)}
+          severity="success"
+          variant="filled"
+          sx={{ width: "100%" }}
+        >
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
     <Modal open={open} onClose={handleClose}>
   <Box sx={style}>
     <Typography variant="h6" component="h2" mb={2}>

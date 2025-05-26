@@ -1,5 +1,5 @@
 import { inject, injectable } from "tsyringe";
-import { IBookingRepository } from "../../../domain/repositories/IBookingrepository";
+import { IBookingRepository, rideHistory } from "../../../domain/repositories/IBookingrepository";
 import { BookingWithUsername } from "../../../domain/repositories/IBookingrepository";
 import { PaginatedResult } from "../../../domain/repositories/IBookingrepository";
 
@@ -10,7 +10,7 @@ export class GetUserBookings {
     private bookingRepo: IBookingRepository
   ) {}
 
-  async execute(driverId: string, page: number = 1, limit: number = 2): Promise<PaginatedResult<BookingWithUsername>> {
+  async execute(driverId: string, page: number = 1, limit: number = 2): Promise<PaginatedResult<rideHistory>> {
    
     return await this.bookingRepo.findBookingsByDriver(driverId, page, limit);
   }
