@@ -1,4 +1,4 @@
-import { ChangeEvent, useEffect, useState } from "react";
+import {  useEffect, useState } from "react";
 import LockIcon from '@mui/icons-material/Lock';
 import { 
   Card, 
@@ -25,16 +25,16 @@ import EmailIcon from "@mui/icons-material/Email";
 import PhoneIcon from "@mui/icons-material/Phone";
 import CardGiftcardIcon from "@mui/icons-material/CardGiftcard";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
-import { EditLocation } from "@mui/icons-material";
+
 import { AppDispatch, RootState} from "../store/ReduxStore";
 import { useDispatch,useSelector} from "react-redux";
-import { clearUser,setAuthUser,updateUser } from "../store/slices/AuthuserStore";
+import {setAuthUser,updateUser } from "../store/slices/AuthuserStore";
 import LocationPicker from "../components/LocationPicker";
 import { IUser } from "../constant/types";
 import { getLoggedUserApi, updateLoggedUserApi } from "../Api/userService";
 import { toast ,ToastContainer} from "react-toastify";
 import ApiService from "../Api/ApiService";
-import useAuth from "../hooks/useAuth";
+
 import ChangePassword from "../components/ChangePassword";
 import {
   WhatsappShareButton,
@@ -66,7 +66,7 @@ const shareUrl = signUrl
    
   const [editState,seteditState]=useState<string|null>(null)
   const [openModal, setOpenModal] = useState(false);
-  const [editedUser, setEditedUser] = useState<Partial<IUser>>({ ...user });
+  // const [editedUser, setEditedUser] = useState<Partial<IUser>>({ ...user });
   const [isEdit,setIsEdit]=useState<boolean>(false)
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [profileImageFile, setProfileImageFile] = useState<File | null>(null);

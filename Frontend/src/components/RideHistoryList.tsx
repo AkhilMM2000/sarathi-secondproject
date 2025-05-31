@@ -1,6 +1,6 @@
 // components/RideHistory/RideList.tsx
 import React from 'react';
-import { Pagination, Typography, Box } from '@mui/material';
+import {  Typography, Box } from '@mui/material';
 import { RideCard } from './RideHistoryCard';
 import { RideHistory } from '../constant/types';
 import EnhancedPagination from './Adwancepagination';

@@ -2,7 +2,7 @@ import { Button, Card, CardContent, Typography } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import PersonIcon from "@mui/icons-material/Person"; // Icon for User Login
 import DriveEtaIcon from "@mui/icons-material/DriveEta";
-import Navbar from "../components/Navbar";
+
 const Home = () => {
   const navigate = useNavigate();
 

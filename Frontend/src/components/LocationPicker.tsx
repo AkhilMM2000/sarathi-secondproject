@@ -90,7 +90,7 @@ const LocationPicker: React.FC<LocationPickerProps> = ({ onLocationSelect,defaul
   }, [location]);
 
   // Handler for manual text changes
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = (_e: React.ChangeEvent<HTMLInputElement>) => {
     // If user is typing, don't show errors for incomplete inputs
     if (toastIdRef.current) {
       toast.dismiss(toastIdRef.current);

@@ -37,7 +37,7 @@ const style = {
   
 import { DriverAPI } from "../Api/AxiosInterceptor";
 import EnhancedPagination from "../components/Adwancepagination";
-import Rides from "../user/BookRides";
+
 import moment from "moment";
 import ChatModal from "../components/chat";
 import { CreatesocketConnection } from "../constant/socket";
@@ -130,7 +130,7 @@ const handleCall = (
   
   useEffect(() => {
     const socket=CreatesocketConnection()
-    socket.on("cancel:booking", ({ status,reason,startDate,bookingId}) => {
+    socket.on("cancel:booking", ({ status,reason,bookingId}) => {
       console.log(reason,bookingId,'in the driver ride page')
       setBookings((prevBookings) =>
         prevBookings.map((booking) =>
@@ -186,7 +186,7 @@ setSnackbarMessage( message);
     
 
 
-socket.on('payment:status',({status,startDate,bookingId})=>{
+socket.on('payment:status',({bookingId})=>{
   console.log(bookingId,'bookingid in ride.tsx')
   
   setBookings((prevBookings) =>

@@ -119,7 +119,7 @@ const handleCloseRateModal = () => {
   setSelectedRideId(null);
   setSelectedDriverId(null);
 };
-const showSnackbar = (msg: string, type: "success" | "error" = "success") => {
+const showSnackbar = (msg: string, _type: "success" | "error" = "success") => {
   setSnackbarMessage(msg);
   setOpenSnackbar(true);
 };
@@ -181,7 +181,7 @@ useEffect(() => {
     );
   });
 
-   socket.on("booking:reject", ({status,startDate,bookingId,reason}) => {
+   socket.on("booking:reject", ({bookingId}) => {
       
     setRides(prevRides =>
       prevRides.filter(ride =>

@@ -1,4 +1,4 @@
-import { useState, forwardRef, SyntheticEvent } from 'react';
+import {  forwardRef, SyntheticEvent } from 'react';
 import Snackbar from '@mui/material/Snackbar';
 import MuiAlert, { AlertProps } from '@mui/material/Alert';
 import { Slide, SlideProps } from '@mui/material';
@@ -55,12 +55,13 @@ const EnhancedAlerts = ({
   autoHideDuration = 4000
 }: EnhancedAlertsProps) => {
   
-  const handleSuccessClose = (event?: SyntheticEvent | Event, reason?: string) => {
-    if (reason === 'clickaway') return;
-    setSuccess(false);
-  };
   
-  const handleErrorClose = (event?: SyntheticEvent | Event, reason?: string) => {
+  const handleSuccessClose = (_event?: SyntheticEvent | Event, reason?: string) => {
+  if (reason === 'clickaway') return;
+  setSuccess(false);
+};
+  
+  const handleErrorClose = (_event?: SyntheticEvent | Event, reason?: string) => {
     if (reason === 'clickaway') return;
     setError('');
   };

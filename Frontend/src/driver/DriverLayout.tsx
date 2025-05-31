@@ -1,4 +1,4 @@
-import  { useEffect, useRef, useState } from 'react';
+import  { useEffect,  useState } from 'react';
 import { Outlet, Link, useLocation, useNavigate } from "react-router-dom";
 import { 
   Drawer, 
@@ -28,7 +28,7 @@ import LogoutIcon from "@mui/icons-material/Logout";
 import DirectionsCarIcon from "@mui/icons-material/DirectionsCar";
 import MenuIcon from "@mui/icons-material/Menu";
 import CloseIcon from "@mui/icons-material/Close";
-import StarIcon from "@mui/icons-material/Star";
+
 import { AppDispatch, RootState } from "../store/ReduxStore";
 import { useDispatch, useSelector } from "react-redux";
 import {  setDriver } from '../store/slices/DriverStore';
@@ -135,21 +135,21 @@ useEffect(()=>{
       socket.emit('driver:online', driverId); 
     }
   
-    socket.on('booking:new', ({startDate,newRide}) => {
+    socket.on('booking:new', ({startDate}) => {
       const formattedDate = moment(startDate).format("MMMM D, dddd");
 setMessage(`📢 New booking received from ${formattedDate}`);
       
       setOpen(true);
     });
   
-  socket.on('cancel:booking',({status,reason,startDate,cancel:booking})=>{
+  socket.on('cancel:booking',({reason,startDate})=>{
     const formattedDate = moment(startDate).format("MMMM D, dddd");
     setMessage(`cancel booking  ${formattedDate} due to ${reason}`);
       
       setOpen(true);
   })
 
- socket.on('payment:status',({status,startDate,bookingId})=>{
+ socket.on('payment:status',({status,startDate})=>{
   
   console.log(status,startDate,"paymentStatus event")
   const formattedDate = moment(startDate).format("MMMM D, dddd");
@@ -187,7 +187,7 @@ setMessage(`📢 New booking received from ${formattedDate}`);
 
   const renderMenuItems = () => (
     <List>
-      {menuItems.map((item, index) => {
+      {menuItems.map((item) => {
         const isActive = location.pathname === item.path;
         return (
           <ListItem key={item.text} disablePadding sx={{ mb: 0.5 }}>

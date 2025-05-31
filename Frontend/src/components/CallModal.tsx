@@ -1,6 +1,6 @@
 // src/components/CallModal.tsx
 
-import React, { useEffect, useRef } from "react";
+import React from "react";
 import { Dialog } from "@mui/material"; // Optional: Replace with custom modal if needed
 
 type CallModalProps = {

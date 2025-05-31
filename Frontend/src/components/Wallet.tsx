@@ -5,7 +5,7 @@ import {
   Typography,
   Box,
   Grid,
-  Paper,
+ 
   Divider,
   List,
   ListItem,
@@ -14,7 +14,7 @@ import {
   Avatar,
   Chip,
   useTheme,
-  useMediaQuery,
+
   alpha
 } from '@mui/material';
 import {
@@ -68,21 +68,11 @@ const TransactionItem = styled(ListItem)<{ transactiontype: 'CREDIT' | 'DEBIT' }
   })
 );
 
-const StatCard = styled(Paper)(({ theme }) => ({
-  padding: theme.spacing(2),
-  borderRadius: 12,
-  textAlign: 'center',
-  height: '100%',
-  display: 'flex',
-  flexDirection: 'column',
-  justifyContent: 'center',
-  alignItems: 'center'
-}));
+
 
 const Wallet: React.FC<WalletProps> = ({ balance, transactions }) => {
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-  const isTablet = useMediaQuery(theme.breakpoints.down('md'));
+  
   
   const formatINR = (amount: number) =>
     new Intl.NumberFormat('en-IN', { 

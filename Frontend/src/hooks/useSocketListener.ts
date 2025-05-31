@@ -1,8 +1,8 @@
 // src/hooks/useSocketListener.ts
-import { use, useEffect, useState } from "react";
+import {  useEffect, useState } from "react";
 import { CreatesocketConnection } from "../constant/socket"; 
 
-import useFetchUser from "./useFetchUser";
+
 import { RootState } from "../store/ReduxStore";
 import { useSelector } from "react-redux";
 import moment from "moment";
@@ -22,14 +22,14 @@ export const useSocketListener = () => {
       socket.emit("user:online", {userId:userData?._id});
     }
 
-    socket.on("booking:confirmation", ({status,startDate,bookingId}) => {
+    socket.on("booking:confirmation", ({status,startDate}) => {
           const formattedDate = moment(startDate).format("MMMM D, dddd");
     console.log("Booking confirmation reach here okay:",status,startDate);
       setMessage(`Booking ${status} for a ride in ${formattedDate}`);
       setOpen(true);
     });
 
-    socket.on("booking:reject", ({status,startDate,bookingId,reason}) => {
+    socket.on("booking:reject", ({status,startDate,reason}) => {
       const formattedDate = moment(startDate).format("MMMM D, dddd");
 console.log("Booking confirmation reach here okay:",status,startDate);
   setMessage(`Booking ${status} for a ride in ${formattedDate} due to ${reason}`);

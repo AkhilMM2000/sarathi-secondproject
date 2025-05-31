@@ -15,7 +15,13 @@ import {
   Tooltip,
   Paper,
   Badge,
- Fade } from '@mui/material';
+ Fade, 
+ Popover,
+ List,
+ ListItem,
+ ListItemIcon,
+ ListItemText,
+ ListItemButton} from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import SendIcon from '@mui/icons-material/Send';
 import DriveEtaIcon from '@mui/icons-material/DriveEta';
@@ -26,7 +32,8 @@ import { useSelector } from 'react-redux';
 import { RootState } from '../store/ReduxStore';
 import { DriverAPI, UserAPI } from '../Api/AxiosInterceptor';
 import useFetchChatUserData from '../hooks/useFetchChatUserData';
-
+import MoreVertIcon from '@mui/icons-material/MoreVert';
+import DeleteIcon from '@mui/icons-material/Delete';
 import EmojiEmotionsIcon from '@mui/icons-material/EmojiEmotions';
 import AttachFileIcon from '@mui/icons-material/AttachFile';
 import DescriptionIcon from '@mui/icons-material/Description';
@@ -44,6 +51,7 @@ interface ChatModalProps {
 }
 
 interface Message {
+  _id?: string;
   senderId: string;
   senderRole: 'User' | 'Driver';
    type: 'text'|'image' | 'pdf' | 'doc' 
@@ -72,6 +80,46 @@ const ChatModal: React.FC<ChatModalProps> = ({ open, onClose, senderType, roomId
   const currentUser = useSelector((state: RootState) =>
     senderType === 'user' ? state.authUser.user : state.driverStore.driver
   );
+//delete message popover and delete message functionality
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+ const [hoveredMsgId, setHoveredMsgId] = useState<string | null>(null);
+
+
+const [selectedMessageId, setSelectedMessageId] = useState<string | null>(null);
+
+const handlePopoverOpen = (event: React.MouseEvent<HTMLElement>, messageId: string) => {
+  setAnchorEl(event.currentTarget);
+  setSelectedMessageId(messageId);
+};
+
+const handlePopoverClose = () => {
+  setAnchorEl(null);
+  setSelectedMessageId(null);
+};
+const handleDelete = async () => {
+  if (!selectedMessageId) return;
+
+  try {
+    if(senderType === 'user'){
+      await UserAPI.delete(`/chat/${roomId}/message/${selectedMessageId}`);
+   
+  } else if(senderType === 'driver'){
+      await DriverAPI.delete(`/chat/${roomId}/message/${selectedMessageId}`);
+    
+    
+  }
+  setMessages((prev) => prev.filter((msg) => msg._id !== selectedMessageId));
+    socket.emit('messageDeleted', { messageId: selectedMessageId,roomId });
+
+  } catch (error) {
+    console.error('Delete error:', error);
+  } finally {
+    handlePopoverClose();
+  }
+};
+const openPop = Boolean(anchorEl);
+
+
   useEffect(() => {
     if (!recieverId) return;
 
@@ -96,7 +144,7 @@ const ChatModal: React.FC<ChatModalProps> = ({ open, onClose, senderType, roomId
       try {
     if(senderType=='user'){ 
         const response = await UserAPI.get(`/chat/${roomId}`);
-        console.log(response.data);
+        console.log(response.data,'your chat reach here');
         setMessages(response.data);
     }else if(senderType=='driver'){
         const response = await DriverAPI.get(`/chat/${roomId}`); 
@@ -122,14 +170,18 @@ const ChatModal: React.FC<ChatModalProps> = ({ open, onClose, senderType, roomId
     const handleError = ({ error }: { error: string }) => {
       setError(error || 'Unknown error occurred.');
     };
-
+const deleteMessage = (messageId: string) => {
+  setMessages((prev) => prev.filter((msg) => msg._id !== messageId));
+};
+socket.on('messageDeleted',deleteMessage
+ );
     socket.on('receiveMessage', handleReceiveMessage);
     socket.on('messageError', handleError);
 
     return () => {
       socket.emit('leaveChat', { bookingId: roomId, userId: currentUser._id,userType: senderType });
 
-   
+   socket.off('messageDeleted', deleteMessage);
       socket.off('receiveMessage', handleReceiveMessage);
       socket.off('messageError', handleError);
     };
@@ -209,7 +261,7 @@ console.log(simplifiedType,'this is your current file type')
     messagesEndRef.current?.scrollIntoView({ behavior: 'auto' });
   }, [messages]);
 console.log(userData,'userData')
-console.log('reach')
+
   const handleSend = () => {
     if (!message.trim() || !roomId || !currentUser?._id) return;
 console.log(senderType, roomId, message.trim(), currentUser._id);
@@ -480,6 +532,8 @@ const onEmojiClick = (emojiObject:EmojiClickData) => {
               
               return (
                 <Box
+                 onMouseEnter={() => setHoveredMsgId(msg._id || null)}
+  onMouseLeave={() => setHoveredMsgId(null)}
                   key={index}
                   alignSelf={isCurrentUser ? 'flex-end' : 'flex-start'}
                   sx={{
@@ -499,7 +553,16 @@ const onEmojiClick = (emojiObject:EmojiClickData) => {
                       {userData?.name || (msgSenderType === 'User' ? 'User' : 'Driver')}
                     </Typography>
                   )}
-                  
+                  {hoveredMsgId === msg._id && (<Box sx={{ alignSelf: 'flex-end', mt: 0.5 }}>
+  <IconButton
+    size="small"
+    onClick={(e) => handlePopoverOpen(e, msg._id!)}
+    sx={{ p: 0.5 }}
+  >
+    <MoreVertIcon fontSize="small" />
+  </IconButton>
+</Box>)}
+
                   <Paper
                     elevation={0}
                     sx={{
@@ -708,10 +771,33 @@ const onEmojiClick = (emojiObject:EmojiClickData) => {
               ),
             }}
           />
+          
+
         </Box>
       </DialogContent>
     </Dialog>
-
+<Popover
+  open={openPop}
+  anchorEl={anchorEl}
+  onClose={handlePopoverClose}
+  anchorOrigin={{
+    vertical: 'center',
+    horizontal: 'right',
+  }}
+  transformOrigin={{
+    vertical: 'center',
+    horizontal: 'right',
+  }}
+>
+  <List dense>
+    <ListItem disablePadding>
+      <ListItemButton onClick={handleDelete}>
+        <ListItemIcon><DeleteIcon fontSize="small" /></ListItemIcon>
+        <ListItemText primary="Delete" />
+      </ListItemButton>
+    </ListItem>
+  </List>
+</Popover>
       {/* Error Snackbar */}
       <Snackbar
         open={!!error}

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Pagination as MuiPagination } from '@mui/material';
 import { motion } from 'framer-motion';
 

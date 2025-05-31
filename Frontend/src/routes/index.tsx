@@ -1,21 +1,20 @@
-import {  Routes, Route, BrowserRouter } from "react-router-dom";
+import {  Routes, Route } from "react-router-dom";
 import Home from "../user/Home";
 import UserRegister from "../user/UserRegister";
 import OTPVerification from "../user/OtpVerification";
-import Navbar from "../components/Navbar";
-import Footer from "../user/Footer";
+
 import Body from "./Body";
 import UserLogin from "../user/UserLogin";
 import UserHome from "../components/UserHome";
 import UserBody from "./UserBody";
 
 
-import { Dashboard } from "@mui/icons-material";
+
 import Dashboards from "../user/Dashboard";
 import Vehicle from "../user/Vehicle";
 import UserDashlayout from "../user/DashboardLayout";
 import ResetPassword from "../components/ResetPassword";
-import DriverList from "../components/ListDrivers";
+
 import DriverListedPage from "../user/DriverListedPage";
 import BookDriver from "../user/BookDriver";
 import BookRides from "../user/BookRides";
@@ -26,6 +25,7 @@ import { RideHistoryPage } from "../components/RideHistoryPage";
 import { useSelector } from "react-redux";
 import { RootState } from "../store/ReduxStore";
 import PdfFilePreview from "../components/previewpdf";
+import NotFound from "../components/NotFound";
 const AppRoutes = () => {
  const Currentuser = useSelector((state: RootState) => state.authUser.user);
 
@@ -59,7 +59,9 @@ const AppRoutes = () => {
           <Route path="call" element ={<VideoCallPage role="user" />}/>
           <Route path="pdf" element={<PdfFilePreview />}/>
           <Route path="ridehistory" element={<RideHistoryPage role="user" userId={Currentuser?._id!}/> }/>
+            <Route path="*" element={<NotFound />} />
         </Route>
+          
       </Routes>
     
     

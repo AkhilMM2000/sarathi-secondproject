@@ -1,4 +1,4 @@
-import { Dayjs } from "dayjs";
+
 import { UserAPI, DriverAPI, AdminAPI } from "./AxiosInterceptor";
 import { UserRole } from "../constant/types";
 import { getApiInstance } from "../constant/Api";

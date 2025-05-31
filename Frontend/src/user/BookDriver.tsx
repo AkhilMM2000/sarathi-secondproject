@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import LocationSelector from "../components/Bookdriver";
-import { Typography, Avatar, Rating, Chip, Button, Box, Paper, Divider, FormGroup, FormControlLabel, Checkbox, Grid, CircularProgress, Snackbar, Alert } from "@mui/material";
+import { Typography, Avatar, Rating,  Button, Box, Paper, Divider, FormGroup, FormControlLabel, Checkbox, Grid, Snackbar, Alert } from "@mui/material";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { useNearbyDrivers } from "../hooks/useNearbyDrivers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
@@ -31,7 +31,7 @@ const [isRangeMode, setIsRangeMode] = useState<boolean>(false);
   const [singleDate, setSingleDate] = useState<Dayjs | null>(null);
   const [startDate, setStartDate] = useState<Dayjs | null>(null);
   const [endDate, setEndDate] = useState<Dayjs | null>(null);
-  const [daysInRange, setDaysInRange] = useState<number>(0);
+  const [_daysInRange, setDaysInRange] = useState<number>(0);
   const [openReviewModal, setOpenReviewModal] = useState(false);
   const navigate=useNavigate()
   const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: 'success' | 'error' | 'info' | 'warning' }>({ open: false, message: "", severity: "success" });

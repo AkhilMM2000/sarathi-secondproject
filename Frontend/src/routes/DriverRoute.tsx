@@ -1,4 +1,4 @@
-import {  Routes, Route, BrowserRouter } from "react-router-dom";
+import {  Routes, Route } from "react-router-dom";
 import DriverSidebar from "../driver/DriverLayout";
 import DriverRegister from "../driver/driverRegister";
 import ProfileLocation from "../driver/Location";
@@ -11,6 +11,7 @@ import VideoCallPage from "../components/VideoCall";
 import { RideHistoryPage } from "../components/RideHistoryPage";
 import { useSelector } from "react-redux";
 import { RootState } from "../store/ReduxStore";
+import NotFound from "../components/NotFound";
 
 
 const DriverRoute = () => {
@@ -34,8 +35,9 @@ const DriverRoute = () => {
       <Route path="rides" element={<RidesDriver/>} />
        <Route path="call" element ={<VideoCallPage role="driver"/>}/>
          <Route path="history" element={<RideHistoryPage role="driver" userId={driverState?._id!}/> }/>
+           <Route path="*" element={<NotFound />} />
     </Route>
-
+      
       </Routes>
     
   

@@ -4,17 +4,7 @@ import { Modal, Box, Typography, CircularProgress, Button, Divider, Paper, useTh
 import { Check, DirectionsCar } from '@mui/icons-material';
 import { UserAPI } from '../Api/AxiosInterceptor';
 
-const style = {
-  position: 'absolute' as const,
-  top: '50%',
-  left: '50%',
-  transform: 'translate(-50%, -50%)',
-  bgcolor: 'background.paper',
-  borderRadius: 3,
-  boxShadow: 24,
-  p: 4,
-  minWidth: 300,
-};
+
 
 type BookingType = 'ONE_RIDE' | 'RANGE_OF_DATES';
 

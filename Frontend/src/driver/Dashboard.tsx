@@ -25,11 +25,11 @@ import { setDriver, updateDriver } from "../store/slices/DriverStore";
 
 import { ToastContainer,toast } from 'react-toastify';
 import ApiService from "../Api/ApiService";
-import useDriverAuth from "../hooks/useAuth";
+
 import RejectionNotification from "../components/Driverstatus";
 import ChangePassword from "../components/ChangePassword";
 import { DriverAPI } from "../Api/AxiosInterceptor";
-import { useNavigate } from "react-router-dom";
+
 
 import EditIcon from '@mui/icons-material/Edit';
 import SaveIcon from '@mui/icons-material/Save';
@@ -70,7 +70,7 @@ const [licenseImage, setLicenseImage] = useState<File | null>(null);
 const [licensePreview, setLicensePreview] = useState<string | null>(null);
 const [editedLicenseNumber, setEditedLicenseNumber] = useState(driverState?.licenseNumber || "");
 
-const naviagte=useNavigate()
+
 
    const [isUpdating, setIsUpdating] = useState(false);
 
@@ -383,7 +383,7 @@ const handleFileChange = (
       console.error(err);
     }
   };
-const VerifyPayment=async(e:MouseEvent<HTMLButtonElement>)=>{
+const VerifyPayment=async(_e:MouseEvent<HTMLButtonElement>)=>{
   try {
     await DriverAPI.post('/verify-account', { driverId: driverState?._id });
     setRefresh(prev => !prev);

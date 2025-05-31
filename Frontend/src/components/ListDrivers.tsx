@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { Grid, Card, CardContent, Typography, Avatar, TextField, Box, Button, Container, useMediaQuery, useTheme, Rating, Divider } from "@mui/material";
+import  { useState } from "react";
+import { Grid, Card, CardContent, Typography, Avatar, TextField, Box, Button, Container, Rating, Divider } from "@mui/material";
 
 import CustomPagination from "./pagination"; 
 import LocationOnIcon from '@mui/icons-material/LocationOn';
@@ -7,14 +7,11 @@ import PhoneIcon from '@mui/icons-material/Phone';
 import DirectionsCarIcon from '@mui/icons-material/DirectionsCar';
 import { useNearbyDrivers } from "../hooks/useNearbyDrivers";
 import { Link } from "react-router-dom";
-import { RootState } from "../store/ReduxStore";
-import { useSelector } from "react-redux";
+
 const DriverList = () => {
   const [search, setSearch] = useState("");
-  const theme = useTheme();
-  const isExtraSmall = useMediaQuery(theme.breakpoints.down('sm'));
-  const isSmall = useMediaQuery(theme.breakpoints.between('sm', 'md'));
-  const isMedium = useMediaQuery(theme.breakpoints.between('md', 'lg'));
+ 
+ 
   const [currentPage, setCurrentPage] = useState(1);
   const driversPerPage = 8
 
@@ -31,12 +28,7 @@ const DriverList = () => {
   const indexOfLastDriver = currentPage * driversPerPage;
   const indexOfFirstDriver = indexOfLastDriver - driversPerPage;
   const currentDrivers = filteredDrivers.slice(indexOfFirstDriver, indexOfLastDriver);
-  const getGridSize = () => {
-    if (isExtraSmall) return 12; // 1 card per row on extra small screens
-    if (isSmall) return 6;      // 2 cards per row on small screens
-    if (isMedium) return 4;     // 3 cards per row on medium screens
-    return 3;                   // 4 cards per row on large screens
-  };
+
   return (
     <Container maxWidth="lg"   sx={{ 
         py: 4,

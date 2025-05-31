@@ -1,14 +1,13 @@
 import { useState, useEffect } from "react";
 import { TextField, Button, Typography, Card } from "@mui/material";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
-import ApiService from "../Api/ApiService";
+
 import { toast, ToastContainer } from "react-toastify";
 
 const DriverOTPVerification = () => {
   const navigate = useNavigate();
-  const params = new URLSearchParams(location.search);
-  const role = params.get("role");
+ 
+ 
 
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
   const [timer, setTimer] = useState(30);
@@ -18,9 +17,11 @@ const DriverOTPVerification = () => {
 
   useEffect(() => {
     const storedEmail = localStorage.getItem("email");
+    console.log("Stored Email:", email);
     if (storedEmail) {
       setEmail(storedEmail);
     } else {
+      setError("No email found, please register again.");
       toast.error("No email found, please register again.");
     }
   }, []);

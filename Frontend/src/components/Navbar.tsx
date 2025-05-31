@@ -18,7 +18,7 @@ import DirectionsCarIcon from '@mui/icons-material/DirectionsCar';
 import LogoutIcon from '@mui/icons-material/Logout';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
-import SettingsIcon from '@mui/icons-material/Settings';
+
 import useFetchUser from '../hooks/useFetchUser';
 import { useNavigate } from 'react-router-dom';
 import ApiService from '../Api/ApiService';

@@ -1,7 +1,7 @@
 import React, { useState, FormEvent } from 'react';
 import ApiService from '../Api/ApiService';
 import { ToastContainer,toast } from 'react-toastify';
-import { Navigate, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 interface LoginCredentials {
   email: string;
   password: string;

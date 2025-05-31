@@ -1,7 +1,7 @@
 // components/RideHistory/RideCard.tsx
 import React from 'react';
 import { Card, CardContent, Avatar, Typography, Grid, Stack, Chip, Box } from '@mui/material';
-import DirectionsCarIcon from '@mui/icons-material/DirectionsCar';
+
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import { RideHistory } from '../constant/types';
 import moment from 'moment';

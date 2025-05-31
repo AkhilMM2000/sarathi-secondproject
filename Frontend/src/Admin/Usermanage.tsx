@@ -35,17 +35,17 @@ import {
   DirectionsCar as VehicleIcon,
   Block as BlockIcon,
   CheckCircle as UnblockIcon,
-  Visibility as ViewIcon,
+ 
 } from '@mui/icons-material';
 import CloseIcon from "@mui/icons-material/Close";
 import ImageIcon from "@mui/icons-material/Image";
 import { AppDispatch, RootState } from "../store/ReduxStore";
 import { useDispatch, useSelector } from 'react-redux';
-import { IUser, IVehicle, UserWithVehicleCount } from '../constant/types'; 
-import { changeBlockStatus, setUser,updateUser} from '../store/slices/userStore';
+import {  IVehicle, UserWithVehicleCount } from '../constant/types'; 
+import { changeBlockStatus, setUser} from '../store/slices/userStore';
 import { BlockUnblockApi, getUserApi } from '../Api/userService';
 import { getVehiclesByUser } from '../Api/vehicleService';
-import { ToastContainer,toast } from 'react-toastify';
+import {toast } from 'react-toastify';
 import usePreventBackNavigation from '../hooks/usePreventBackNavigation';
 
 const UserManagement: React.FC = () => {
@@ -120,6 +120,8 @@ const users = useSelector((state: RootState) => state.users.user);
 
   const handleChangePage = (event: unknown, newPage: number) => {
     setPage(newPage);
+     
+    console.log(event)
   };
 
   const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
